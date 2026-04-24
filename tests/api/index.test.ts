@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createApp } from "../../api/index.js";
+import { createApp } from "../../api/index";
 
 describe("createApp", () => {
   it("returns health payload for GET /api/health", async () => {

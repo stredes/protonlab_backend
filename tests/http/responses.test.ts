@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { fail, ok } from "../../src/utils/responses.js";
+import { fail, ok } from "../../src/utils/responses";
 
 describe("responses", () => {
   it("builds successful responses with request id header", async () => {

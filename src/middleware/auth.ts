@@ -1,5 +1,5 @@
-import type { AuthenticatedUser, Role } from "../models/user.js";
-import { fail } from "../utils/responses.js";
+import type { AuthenticatedUser, Role } from "../models/user";
+import { fail } from "../utils/responses";
 
 export type RequestContext = {
   request: Request;

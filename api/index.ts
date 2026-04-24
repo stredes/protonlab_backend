@@ -1,6 +1,6 @@
-import { firestoreHealthCheck as defaultFirestoreHealthCheck } from "../src/lib/firestore.js";
-import { getRequestId } from "../src/utils/request.js";
-import { fail, ok } from "../src/utils/responses.js";
+import { firestoreHealthCheck as defaultFirestoreHealthCheck } from "../src/lib/firestore";
+import { getRequestId } from "../src/utils/request";
+import { fail, ok } from "../src/utils/responses";
 
 type AppDependencies = {
   firestoreHealthCheck?: () => Promise<boolean>;

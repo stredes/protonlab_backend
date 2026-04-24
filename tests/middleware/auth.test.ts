@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { requireAuth, requireRole } from "../../src/middleware/auth.js";
-import type { Role } from "../../src/models/user.js";
+import { requireAuth, requireRole } from "../../src/middleware/auth";
+import type { Role } from "../../src/models/user";
 
 describe("auth middleware", () => {
   it("rejects requests without bearer token", async () => {
