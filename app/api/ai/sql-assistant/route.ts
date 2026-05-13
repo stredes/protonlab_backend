@@ -3,13 +3,36 @@ import {
   createSqlAssistantService
 } from "../../../../src/server/sql-assistant";
 import { getFirebaseAuth } from "../../../../src/lib/firebaseAdmin";
+import { ROLES, type Role } from "../../../../src/models/user";
 import { requireAuth, requireRole } from "../../../../src/middleware/auth";
 import { createPreflightResponse, withCors } from "../../../../src/utils/cors";
 
 const methods = ["POST", "OPTIONS"];
 const sqlAssistantService = createSqlAssistantService();
+
+function resolveUserRole(value: unknown): Role {
+  if (typeof value === "string" && ROLES.includes(value as Role)) {
+    return value as Role;
+  }
+
+  return "cliente";
+}
+
 const authenticate = requireAuth({
-  verifyToken: (token) => getFirebaseAuth().verifyIdToken(token)
+  verifyToken: async (token) => {
+    const decodedToken = await getFirebaseAuth().verifyIdToken(token);
+    const customClaims = decodedToken as Record<string, unknown>;
+
+    return {
+      uid: decodedToken.uid,
+      email: decodedToken.email ?? null,
+      role: resolveUserRole(
+        customClaims.role ??
+          customClaims["https://protonlab.cl/role"] ??
+          customClaims["https://schemas.protonlab.cl/role"]
+      )
+    };
+  }
 });
 const handleSqlAssistant = createSqlAssistantHandler({
   authorize: async (request) => {
