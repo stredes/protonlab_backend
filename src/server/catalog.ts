@@ -4,6 +4,12 @@ import { fail, ok } from "../utils/responses";
 
 type CatalogEnv = Partial<Record<"PROTONLAB_USE_FAKE_CATALOG", string>>;
 
+function getCatalogEnv(): CatalogEnv {
+  return {
+    PROTONLAB_USE_FAKE_CATALOG: process.env.PROTONLAB_USE_FAKE_CATALOG
+  };
+}
+
 type CatalogDataset = {
   categories: typeof categories;
   products: CatalogProduct[];
@@ -11,7 +17,7 @@ type CatalogDataset = {
 
 function shouldUseFakeCatalog(
   request: Request,
-  env: CatalogEnv = process.env
+  env: CatalogEnv = getCatalogEnv()
 ): boolean {
   const url = new URL(request.url);
   const mock = url.searchParams.get("mock");
@@ -25,7 +31,7 @@ function shouldUseFakeCatalog(
 
 export function getCatalogDataset(
   request: Request,
-  env: CatalogEnv = process.env
+  env: CatalogEnv = getCatalogEnv()
 ): CatalogDataset {
   if (shouldUseFakeCatalog(request, env)) {
     return {
