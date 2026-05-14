@@ -59,6 +59,52 @@ describe("catalog routes", () => {
     );
   });
 
+  it("returns fake products when mock=fake is requested", async () => {
+    const response = await getProducts(
+      new Request("http://localhost/api/products?mock=fake", {
+        method: "GET"
+      })
+    );
+
+    expect(response.status).toBe(200);
+
+    const payload = await response.json();
+
+    expect(payload.success).toBe(true);
+    expect(payload.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.stringMatching(/^fake-/),
+          slug: expect.any(String),
+          name: expect.any(String)
+        })
+      ])
+    );
+  });
+
+  it("returns fake categories when mock=fake is requested", async () => {
+    const response = await getCategories(
+      new Request("http://localhost/api/categories?mock=fake", {
+        method: "GET"
+      })
+    );
+
+    expect(response.status).toBe(200);
+
+    const payload = await response.json();
+
+    expect(payload.success).toBe(true);
+    expect(payload.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.stringMatching(/^fake-cat-/),
+          slug: expect.any(String),
+          name: expect.any(String)
+        })
+      ])
+    );
+  });
+
   it("returns a product by slug", async () => {
     const response = await getProductBySlug(
       new Request("http://localhost/api/products/slug/cluster-ia-nexus", {

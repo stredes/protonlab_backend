@@ -1,16 +1,60 @@
 import { categories, products, type CatalogProduct } from "../data/catalog";
+import { createFakeCategories, createFakeProducts } from "../data/catalogFake";
 import { fail, ok } from "../utils/responses";
 
+type CatalogEnv = Partial<Record<"PROTONLAB_USE_FAKE_CATALOG", string>>;
+
+type CatalogDataset = {
+  categories: typeof categories;
+  products: CatalogProduct[];
+};
+
+function shouldUseFakeCatalog(
+  request: Request,
+  env: CatalogEnv = process.env
+): boolean {
+  const url = new URL(request.url);
+  const mock = url.searchParams.get("mock");
+
+  if (mock === "fake") {
+    return true;
+  }
+
+  return env.PROTONLAB_USE_FAKE_CATALOG === "true";
+}
+
+export function getCatalogDataset(
+  request: Request,
+  env: CatalogEnv = process.env
+): CatalogDataset {
+  if (shouldUseFakeCatalog(request, env)) {
+    return {
+      categories: createFakeCategories(),
+      products: createFakeProducts()
+    };
+  }
+
+  return {
+    categories,
+    products
+  };
+}
+
 export function listCategories(request: Request): Response {
-  return ok(categories, request);
+  const dataset = getCatalogDataset(request);
+
+  return ok(dataset.categories, request);
 }
 
 export function listProducts(request: Request): Response {
-  return ok(products, request);
+  const dataset = getCatalogDataset(request);
+
+  return ok(dataset.products, request);
 }
 
 export function getProductBySlug(request: Request, slug: string): Response {
-  const product = products.find((entry) => entry.slug === slug);
+  const dataset = getCatalogDataset(request);
+  const product = dataset.products.find((entry) => entry.slug === slug);
 
   if (!product) {
     return fail("Producto no encontrado", {
