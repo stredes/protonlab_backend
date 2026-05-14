@@ -10,7 +10,9 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
-    "test": "vitest run"
+    "test": "vitest run",
+    "smoke:connection": "node scripts/smoke-frontend-connection.mjs",
+    "smoke:vercel": "node scripts/smoke-frontend-connection.mjs"
   },
   "dependencies": {
     "firebase-admin": "^13.5.0",

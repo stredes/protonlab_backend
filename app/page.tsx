@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { createStatusService } from "../src/server/status";
 
 const statusService = createStatusService();
@@ -57,6 +58,11 @@ export default async function HomePage() {
         <p><code>/api/health</code> para salud básica.</p>
         <p><code>/api/ready</code> para readiness.</p>
         <p><code>/api/status</code> para estado detallado en JSON.</p>
+        <p>
+          <Link href="/admin" style={{ color: "#0f766e", fontWeight: 700 }}>
+            Abrir panel admin del asistente SQL
+          </Link>
+        </p>
       </section>
     </main>
   );
