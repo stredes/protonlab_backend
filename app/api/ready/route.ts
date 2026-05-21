@@ -1,9 +1,11 @@
 import { createHealthHandler } from "../../../src/server/health";
+import { withCors } from "../../../src/utils/cors";
 
 const handler = createHealthHandler({
   firestoreCheck: async () => true
 });
+const methods = ["GET", "OPTIONS"];
 
 export async function GET(request: Request): Promise<Response> {
-  return handler.ready(request);
+  return withCors(await handler.ready(request), request, methods);
 }
