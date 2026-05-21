@@ -1,5 +1,6 @@
 import { fail, ok } from "../utils/responses";
 import { quoteRequestSchema } from "../validation/quote";
+import { registerQuoteFromPayload } from "./operations";
 
 export async function createQuote(request: Request): Promise<Response> {
   let payload: unknown;
@@ -24,6 +25,7 @@ export async function createQuote(request: Request): Promise<Response> {
     });
   }
 
+  const quote = registerQuoteFromPayload(parsed.data as unknown as Record<string, unknown>);
   const itemCount = parsed.data.items.reduce(
     (sum, item) => sum + item.quantity,
     0
@@ -31,7 +33,8 @@ export async function createQuote(request: Request): Promise<Response> {
 
   return ok(
     {
-      quoteId: `quote_${crypto.randomUUID().slice(0, 8)}`,
+      quoteId: quote.id,
+      quoteNumber: quote.quoteNumber,
       status: "pendiente",
       customerName: `${parsed.data.shippingAddress.firstName} ${parsed.data.shippingAddress.lastName}`,
       itemCount,

@@ -1,17 +1,15 @@
-import { createQuote } from "../../../src/server/quotes";
-import { listQuotes } from "../../../src/server/operations";
+import { createUserManagementHandler } from "../../../src/server/users";
 import { createPreflightResponse, withCors } from "../../../src/utils/cors";
 
 const methods = ["GET", "POST", "OPTIONS"];
+const handler = createUserManagementHandler();
 
 export async function GET(request: Request): Promise<Response> {
-  return withCors(await listQuotes(request), request, methods);
+  return withCors(await handler.list(request), request, methods);
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const response = await createQuote(request);
-
-  return withCors(response, request, methods);
+  return withCors(await handler.create(request), request, methods);
 }
 
 export async function OPTIONS(request: Request): Promise<Response> {

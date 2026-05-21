@@ -116,4 +116,54 @@ describe("createSqlAssistantService", () => {
       })
     ).rejects.toThrow(/AI_SQL_API_KEY/i);
   });
+
+  it("can use the OpenAI Responses API when OPENAI_API_KEY is configured", async () => {
+    const fetchFn = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          output_text: JSON.stringify({
+            sql: "SELECT id, total_amount FROM orders ORDER BY created_at DESC LIMIT 5;",
+            explanation: "Lista los últimos pedidos por fecha de creación.",
+            assumptions: ["orders.created_at existe y representa fecha de creación."]
+          })
+        }),
+        {
+          status: 200,
+          headers: {
+            "content-type": "application/json"
+          }
+        }
+      )
+    );
+
+    const service = createSqlAssistantService({
+      env: {
+        OPENAI_API_KEY: "openai-key",
+        AI_SQL_PROVIDER: "openai",
+        AI_SQL_MODEL: "gpt-4o-mini"
+      },
+      fetchFn
+    });
+
+    const result = await service.generateQuery({
+      question: "Últimos 5 pedidos",
+      schema: "orders(id, total_amount, created_at)"
+    });
+
+    expect(result).toEqual({
+      sql: "SELECT id, total_amount FROM orders ORDER BY created_at DESC LIMIT 5;",
+      explanation: "Lista los últimos pedidos por fecha de creación.",
+      assumptions: ["orders.created_at existe y representa fecha de creación."],
+      model: "gpt-4o-mini"
+    });
+    expect(fetchFn).toHaveBeenCalledWith(
+      "https://api.openai.com/v1/responses",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          authorization: "Bearer openai-key"
+        })
+      })
+    );
+  });
 });

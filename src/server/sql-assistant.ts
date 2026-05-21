@@ -8,11 +8,14 @@ type SqlAssistantEnv = Partial<
   Record<
     | "AI_SQL_API_URL"
     | "AI_SQL_API_KEY"
+    | "AI_SQL_PROVIDER"
     | "AI_SQL_MODEL"
     | "AI_SQL_APP_NAME"
     | "AI_SQL_SITE_URL",
     string
-  >
+  > & {
+    OPENAI_API_KEY?: string;
+  }
 >;
 
 type SqlAssistantDependencies = {
@@ -30,6 +33,15 @@ type ProviderChoice = {
 
 type ProviderResponse = {
   choices?: ProviderChoice[];
+  output_text?: string;
+  output?: Array<{
+    type?: string;
+    content?: Array<{
+      type?: string;
+      text?: string;
+      refusal?: string;
+    }>;
+  }>;
 };
 
 export type SqlAssistantResult = {
@@ -45,7 +57,9 @@ type SqlAssistantHandlerDependencies = {
 };
 
 const defaultApiUrl = "https://openrouter.ai/api/v1/chat/completions";
+const defaultOpenAiApiUrl = "https://api.openai.com/v1/responses";
 const defaultModel = "google/gemma-3n-e4b-it:free";
+const defaultOpenAiModel = "gpt-4o-mini";
 const forbiddenSqlPatterns = [
   /\binsert\b/i,
   /\bupdate\b/i,
@@ -129,6 +143,26 @@ function parseProviderContent(content: string): Omit<SqlAssistantResult, "model"
   };
 }
 
+function extractProviderContent(payload: ProviderResponse): string | undefined {
+  if (payload.output_text) {
+    return payload.output_text;
+  }
+
+  for (const output of payload.output ?? []) {
+    for (const item of output.content ?? []) {
+      if (item.refusal) {
+        throw new Error(item.refusal);
+      }
+
+      if (item.type === "output_text" && item.text) {
+        return item.text;
+      }
+    }
+  }
+
+  return payload.choices?.[0]?.message?.content ?? undefined;
+}
+
 export function createSqlAssistantService(
   dependencies: SqlAssistantDependencies = {}
 ) {
@@ -137,17 +171,55 @@ export function createSqlAssistantService(
 
   return {
     async generateQuery(input: SqlAssistantRequest): Promise<SqlAssistantResult> {
-      const apiKey = env.AI_SQL_API_KEY;
+      const provider =
+        env.AI_SQL_PROVIDER === "openai" || env.AI_SQL_PROVIDER === "openrouter"
+          ? env.AI_SQL_PROVIDER
+          : env.OPENAI_API_KEY
+          ? "openai"
+          : "openrouter";
+      const apiKey = provider === "openai" ? env.OPENAI_API_KEY : env.AI_SQL_API_KEY;
 
       if (!apiKey) {
         throw new Error(
-          "Falta configurar AI_SQL_API_KEY para usar el asistente SQL."
+          provider === "openai"
+            ? "Falta configurar OPENAI_API_KEY para usar el asistente SQL."
+            : "Falta configurar AI_SQL_API_KEY para usar el asistente SQL."
         );
       }
 
-      const apiUrl = env.AI_SQL_API_URL ?? defaultApiUrl;
-      const model = env.AI_SQL_MODEL ?? defaultModel;
+      const apiUrl = env.AI_SQL_API_URL ?? (provider === "openai" ? defaultOpenAiApiUrl : defaultApiUrl);
+      const model = env.AI_SQL_MODEL ?? (provider === "openai" ? defaultOpenAiModel : defaultModel);
       const dialect = input.dialect ?? "PostgreSQL";
+      const messages = [
+        {
+          role: "system",
+          content: buildSystemPrompt(dialect)
+        },
+        {
+          role: "user",
+          content: buildUserPrompt(input)
+        }
+      ];
+      const body =
+        provider === "openai"
+          ? {
+              model,
+              temperature: 0.1,
+              input: messages,
+              text: {
+                format: {
+                  type: "json_object"
+                }
+              }
+            }
+          : {
+              model,
+              temperature: 0.1,
+              response_format: {
+                type: "json_object"
+              },
+              messages
+            };
 
       const response = await fetchFn(apiUrl, {
         method: "POST",
@@ -159,23 +231,7 @@ export function createSqlAssistantService(
             ? { "http-referer": env.AI_SQL_SITE_URL }
             : {})
         },
-        body: JSON.stringify({
-          model,
-          temperature: 0.1,
-          response_format: {
-            type: "json_object"
-          },
-          messages: [
-            {
-              role: "system",
-              content: buildSystemPrompt(dialect)
-            },
-            {
-              role: "user",
-              content: buildUserPrompt(input)
-            }
-          ]
-        })
+        body: JSON.stringify(body)
       });
 
       if (!response.ok) {
@@ -183,7 +239,7 @@ export function createSqlAssistantService(
       }
 
       const payload = (await response.json()) as ProviderResponse;
-      const content = payload.choices?.[0]?.message?.content;
+      const content = extractProviderContent(payload);
 
       if (!content) {
         throw new Error("El proveedor IA no devolvió contenido utilizable.");
