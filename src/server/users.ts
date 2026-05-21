@@ -106,10 +106,6 @@ function createClaims(input: Record<string, unknown>, isActive = true): Record<s
   };
 }
 
-function resolveAuth(auth?: AuthAdapter): AuthAdapter {
-  return auth ?? getFirebaseAuth();
-}
-
 async function defaultAuthorizeRoot(request: Request): Promise<AuthenticatedUser | null> {
   const token = getBearerToken(request);
   if (!token) return null;
@@ -201,15 +197,15 @@ async function listAllUsers(auth: AuthAdapter): Promise<ApiUser[]> {
 }
 
 export function createUserManagementHandler(dependencies: HandlerDependencies = {}) {
-  const auth = resolveAuth(dependencies.auth);
   const authorizeRoot = dependencies.authorizeRoot ?? defaultAuthorizeRoot;
+  const getAuthAdapter = () => dependencies.auth ?? getFirebaseAuth();
 
   return {
     async list(request: Request): Promise<Response> {
       const root = await ensureRoot(request, authorizeRoot);
       if (root instanceof Response) return root;
 
-      const users = await listAllUsers(auth);
+      const users = await listAllUsers(getAuthAdapter());
       return ok({ users, items: users }, request);
     },
 
@@ -219,7 +215,7 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
 
       const requestedRole = parseRole(role);
       const vendorId = new URL(request.url).searchParams.get("vendorId");
-      const users = (await listAllUsers(auth)).filter((user) => {
+      const users = (await listAllUsers(getAuthAdapter())).filter((user) => {
         if (user.role !== requestedRole) return false;
         return vendorId ? user.vendorId === vendorId : true;
       });
@@ -230,6 +226,8 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
     async get(request: Request, userId: string): Promise<Response> {
       const root = await ensureRoot(request, authorizeRoot);
       if (root instanceof Response) return root;
+
+      const auth = getAuthAdapter();
 
       if (!auth.getUser) {
         return fail("Usuario no encontrado", {
@@ -263,6 +261,7 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
       }
 
       try {
+        const auth = getAuthAdapter();
         const createdUser = await auth.createUser({
           email,
           password,
@@ -302,6 +301,8 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
       const payload = await parseJsonObject(request);
       if (payload instanceof Response) return payload;
 
+      const auth = getAuthAdapter();
+
       if (!auth.updateUser) {
         return fail("Actualización de usuarios no disponible", {
           status: 500,
@@ -325,7 +326,7 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
       const root = await ensureRoot(request, authorizeRoot);
       if (root instanceof Response) return root;
 
-      await auth.deleteUser?.(userId);
+      await getAuthAdapter().deleteUser?.(userId);
       return ok({ deleted: true }, request);
     },
 
@@ -337,6 +338,7 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
       if (payload instanceof Response) return payload;
 
       const isActive = payload.isActive !== false;
+      const auth = getAuthAdapter();
       const updatedUser = await auth.updateUser?.(userId, { disabled: !isActive });
       if (!updatedUser) {
         return fail("Usuario no encontrado", {
@@ -367,7 +369,7 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
         });
       }
 
-      await auth.updateUser?.(userId, { password });
+      await getAuthAdapter().updateUser?.(userId, { password });
       return ok({ updated: true }, request);
     },
 
