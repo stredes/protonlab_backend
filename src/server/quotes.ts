@@ -1,5 +1,6 @@
 import { fail, ok } from "../utils/responses";
 import { quoteRequestSchema } from "../validation/quote";
+import { InputValidationError } from "./input-security";
 import { registerQuoteFromPayload } from "./operations";
 
 export async function createQuote(request: Request): Promise<Response> {
@@ -25,7 +26,20 @@ export async function createQuote(request: Request): Promise<Response> {
     });
   }
 
-  const quote = registerQuoteFromPayload(parsed.data as unknown as Record<string, unknown>);
+  let quote;
+  try {
+    quote = registerQuoteFromPayload(parsed.data as unknown as Record<string, unknown>);
+  } catch (error) {
+    if (error instanceof InputValidationError) {
+      return fail(error.message, {
+        status: 400,
+        code: "VALIDATION_ERROR",
+        request
+      });
+    }
+
+    throw error;
+  }
   const itemCount = parsed.data.items.reduce(
     (sum, item) => sum + item.quantity,
     0
