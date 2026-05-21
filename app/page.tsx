@@ -4,6 +4,9 @@ import { createStatusService } from "../src/server/status";
 
 const statusService = createStatusService();
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function renderStateLabel(active: boolean): string {
   return active ? "OK" : "Pendiente";
 }
