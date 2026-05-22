@@ -72,6 +72,55 @@ describe("product image blob integration", () => {
     });
   });
 
+  it("supports direct file body uploads like the Vercel Blob client example", async () => {
+    const uploadBlob = vi.fn().mockResolvedValue({
+      url: "https://blob.vercel.dev/products/prod-hardware-ia/hover-file.webp",
+      pathname: "products/prod-hardware-ia/hover-file.webp"
+    });
+    const handler = createProductImageHandler({
+      authorize: vi.fn().mockResolvedValue(null),
+      uploadBlob
+    });
+
+    const response = await handler.upload(
+      new Request(
+        "http://localhost/api/uploads/product-images?productId=prod-hardware-ia&variant=hover&filename=Foto Hover.webp",
+        {
+          method: "POST",
+          headers: { "content-type": "image/webp" },
+          body: new Blob(["image"], { type: "image/webp" })
+        }
+      )
+    );
+
+    expect(response.status).toBe(201);
+    expect(uploadBlob).toHaveBeenCalledWith(
+      expect.stringMatching(/^products\/prod-hardware-ia\/hover-\d+-foto-hover\.webp$/),
+      expect.any(ReadableStream),
+      expect.objectContaining({
+        access: "public",
+        contentType: "image/webp"
+      })
+    );
+  });
+
+  it("rejects direct body uploads without a product id", async () => {
+    const handler = createProductImageHandler({
+      authorize: vi.fn().mockResolvedValue(null),
+      uploadBlob: vi.fn()
+    });
+
+    const response = await handler.upload(
+      new Request("http://localhost/api/uploads/product-images?filename=image.png", {
+        method: "POST",
+        headers: { "content-type": "image/png" },
+        body: new Blob(["image"], { type: "image/png" })
+      })
+    );
+
+    expect(response.status).toBe(400);
+  });
+
   it("rejects non image uploads", async () => {
     const handler = createProductImageHandler({
       authorize: vi.fn().mockResolvedValue(null),

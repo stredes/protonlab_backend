@@ -23,12 +23,13 @@ type ProductImageMapEntry = {
 };
 
 type FormValue = string | File | null;
+type UploadBody = File | ReadableStream<Uint8Array>;
 
 type ProductImageDependencies = {
   authorize?: (request: Request) => Promise<Response | null>;
   uploadBlob: (
     pathname: string,
-    body: File,
+    body: UploadBody,
     options: {
       access: "public";
       contentType: string;
@@ -61,6 +62,10 @@ function sanitizeFileName(value: string): string {
     .replace(/^-+|-+$/g, "");
 
   return normalized || "product-image";
+}
+
+function normalizeContentType(value: string | null): string {
+  return value?.split(";")[0]?.trim().toLowerCase() ?? "";
 }
 
 function getUploadedAtTime(value: BlobEntry): number {
@@ -111,6 +116,40 @@ export function createProductImageHandler(dependencies: ProductImageDependencies
       if (dependencies.authorize) {
         const authorizationFailure = await dependencies.authorize(request);
         if (authorizationFailure) return authorizationFailure;
+      }
+
+      const contentType = normalizeContentType(request.headers.get("content-type"));
+      if (contentType && contentType !== "multipart/form-data" && !contentType.startsWith("multipart/")) {
+        const url = new URL(request.url);
+        const productId = sanitizeProductId(url.searchParams.get("productId"));
+        const variant = parseVariant(url.searchParams.get("variant"));
+        const filename = sanitizeFileName(url.searchParams.get("filename") ?? "product-image");
+
+        if (!productId || !request.body) {
+          return fail("Faltan productId o archivo", { status: 400, code: "VALIDATION_ERROR", request });
+        }
+
+        if (!imageTypes.has(contentType)) {
+          return fail("Solo se permiten imágenes", { status: 400, code: "VALIDATION_ERROR", request });
+        }
+
+        const pathname = `products/${productId}/${variant}-${Date.now()}-${filename}`;
+        const blob = await dependencies.uploadBlob(pathname, request.body, {
+          access: "public",
+          contentType,
+          addRandomSuffix: true
+        });
+
+        return ok(
+          {
+            productId,
+            variant,
+            url: blob.url,
+            pathname: blob.pathname
+          },
+          request,
+          201
+        );
       }
 
       const formData = await request.formData().catch(() => null);
