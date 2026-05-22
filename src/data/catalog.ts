@@ -70,8 +70,8 @@ export const products: CatalogProduct[] = [
     requiresMaintenance: true,
     price: 45000,
     currency: "USD",
-    image: "/src/assets/images/protonlab/ai_hardware_1777123776193.png",
-    hoverImage: "/src/assets/images/protonlab/ai_hardware_1777123776193.png",
+    image: "/product-images/cluster-ia-nexus.jpg",
+    hoverImage: "/product-images/cluster-ia-nexus.jpg",
     categoryId: "cat-equipos",
     href: "/products/cluster-ia-nexus",
     badge: { text: "Destacado", className: "new-badge" },
@@ -92,7 +92,7 @@ export const products: CatalogProduct[] = [
     requiresMaintenance: true,
     price: 150000,
     currency: "USD",
-    image: "/src/assets/images/protonlab/quantum_processor_1777123790537.png",
+    image: "/product-images/procesador-cuantico-qcore.jpg",
     categoryId: "cat-equipos",
     href: "/products/procesador-cuantico-qcore",
     shortDescription:
@@ -110,7 +110,7 @@ export const products: CatalogProduct[] = [
     requiresMaintenance: false,
     price: 850,
     currency: "USD",
-    image: "/src/assets/images/protonlab/cutting_edge_ssd_1777123804662.png",
+    image: "/product-images/ssd-nvme-neo-force.jpg",
     categoryId: "cat-insumos",
     href: "/products/ssd-nvme-neo-force",
     badge: { text: "Nuevo", className: "offer-badge" }
@@ -125,7 +125,7 @@ export const products: CatalogProduct[] = [
     availability: "disponible",
     requiresInstallation: true,
     requiresMaintenance: true,
-    image: "https://placehold.co/400x500/FFF/0B1F33?text=Microscopio",
+    image: "/product-images/microscopio-fluorescencia.jpg",
     categoryId: "cat-equipos",
     href: "/products/microscopio-fluorescencia",
     shortDescription:
@@ -141,7 +141,7 @@ export const products: CatalogProduct[] = [
     availability: "bajo_pedido",
     requiresInstallation: true,
     requiresMaintenance: true,
-    image: "https://placehold.co/400x500/FFF/0B1F33?text=Incubadora+CO2",
+    image: "/product-images/incubadora-co2-cultivos.jpg",
     categoryId: "cat-equipos",
     href: "/products/incubadora-co2-cultivos",
     shortDescription:
@@ -159,7 +159,7 @@ export const products: CatalogProduct[] = [
     requiresMaintenance: false,
     price: 120,
     currency: "USD",
-    image: "https://placehold.co/400x500/FFF/0B1F33?text=Tubos+Ensayo",
+    image: "/product-images/caja-tubos-ensayo-vidrio.jpg",
     categoryId: "cat-insumos",
     href: "/products/caja-tubos-ensayo-vidrio"
   }
