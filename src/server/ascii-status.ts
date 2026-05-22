@@ -1,10 +1,4 @@
-import React from "react";
-import { createStatusService, type BackendStatus } from "../src/server/status";
-
-const statusService = createStatusService();
-
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+import type { BackendStatus } from "./status";
 
 function flag(value: boolean): string {
   return value ? "[OK]" : "[--]";
@@ -21,7 +15,7 @@ function line(label: string, value: string | boolean | null): string {
   return `${label.padEnd(27, ".")} ${rendered}`;
 }
 
-function renderAsciiStatus(status: BackendStatus): string {
+export function renderAsciiStatus(status: BackendStatus): string {
   const summary = status.summary.items.map((item) => `  - ${item}`).join("\n");
 
   return [
@@ -57,14 +51,4 @@ function renderAsciiStatus(status: BackendStatus): string {
     "",
     "+------------------------------------------------------------+"
   ].join("\n");
-}
-
-export default async function HomePage() {
-  const status = await statusService.getStatus();
-
-  return (
-    <main className="ascii-status-page">
-      <pre>{renderAsciiStatus(status)}</pre>
-    </main>
-  );
 }
