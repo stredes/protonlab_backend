@@ -1,4 +1,5 @@
 const defaultAllowedOrigins = [
+  "https://front-protonlab.vercel.app",
   "http://localhost:5175",
   "http://127.0.0.1:5175",
   "http://localhost:5173",
@@ -26,11 +27,28 @@ function resolveOrigin(request: Request): string {
     return "*";
   }
 
-  if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+  if (
+    requestOrigin &&
+    (allowedOrigins.includes(requestOrigin) ||
+      isTrustedVercelFrontendPreview(requestOrigin))
+  ) {
     return requestOrigin;
   }
 
   return allowedOrigins[0] ?? "*";
+}
+
+function isTrustedVercelFrontendPreview(origin: string): boolean {
+  try {
+    const url = new URL(origin);
+
+    return (
+      url.protocol === "https:" &&
+      /^front-protonlab-[a-z0-9-]+\.vercel\.app$/i.test(url.hostname)
+    );
+  } catch {
+    return false;
+  }
 }
 
 function createCorsHeaders(request: Request, methods: string[]): Headers {
