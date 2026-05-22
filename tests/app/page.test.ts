@@ -1,15 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import AdminPage from "../../app/admin/page";
-import HomePage from "../../app/page";
+import { GET as getStatusPage } from "../../app/route";
 
 describe("HomePage", () => {
   it("renders a backend status landing page", async () => {
-    const element = await HomePage();
+    const response = await getStatusPage();
+    const html = await response.text();
 
-    expect(element.type).toBe("main");
-    expect(element.props.className).toBe("status-shell");
-    expect(element.props.children).toBeTruthy();
+    expect(response.headers.get("content-type")).toContain("text/html");
+    expect(html).toContain("Protonlab Backend");
+    expect(html).toContain("Panel operativo");
   });
 
   it("renders an admin workspace for the SQL assistant", async () => {
