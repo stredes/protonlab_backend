@@ -2,6 +2,7 @@ import type { UserRecord } from "firebase-admin/auth";
 
 import { getFirebaseAuth } from "../lib/firebaseAdmin";
 import { ROLES, type AuthenticatedUser, type Role } from "../models/user";
+import { resolveRoleFromClaims } from "./auth";
 import { fail, ok } from "../utils/responses";
 
 type UserRole = Exclude<Role, "cliente">;
@@ -112,11 +113,7 @@ async function defaultAuthorizeRoot(request: Request): Promise<AuthenticatedUser
 
   const decodedToken = await getFirebaseAuth().verifyIdToken(token);
   const claims = decodedToken as Record<string, unknown>;
-  const role = parseRole(
-    claims.role ??
-      claims["https://protonlab.cl/role"] ??
-      claims["https://schemas.protonlab.cl/role"]
-  );
+  const role = parseRole(resolveRoleFromClaims(claims));
 
   if (role !== "root") {
     return null;

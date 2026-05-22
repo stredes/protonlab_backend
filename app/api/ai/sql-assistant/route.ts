@@ -5,6 +5,7 @@ import {
 import { getFirebaseAuth } from "../../../../src/lib/firebaseAdmin";
 import { ROLES, type Role } from "../../../../src/models/user";
 import { requireAuth, requireRole } from "../../../../src/middleware/auth";
+import { resolveRoleFromClaims } from "../../../../src/server/auth";
 import { createPreflightResponse, withCors } from "../../../../src/utils/cors";
 
 const methods = ["POST", "OPTIONS"];
@@ -26,11 +27,7 @@ const authenticate = requireAuth({
     return {
       uid: decodedToken.uid,
       email: decodedToken.email ?? null,
-      role: resolveUserRole(
-        customClaims.role ??
-          customClaims["https://protonlab.cl/role"] ??
-          customClaims["https://schemas.protonlab.cl/role"]
-      )
+      role: resolveUserRole(resolveRoleFromClaims(customClaims))
     };
   }
 });

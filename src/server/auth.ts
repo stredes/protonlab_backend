@@ -56,6 +56,36 @@ function parseRole(rawRole: unknown): UserRole {
   return "socio";
 }
 
+export function resolveRoleFromClaims(claims: Record<string, unknown>): UserRole {
+  const rawRole =
+    claims.role ??
+    claims["https://protonlab.cl/role"] ??
+    claims["https://schemas.protonlab.cl/role"];
+  const parsedRole = parseRole(rawRole);
+
+  if (parsedRole !== "socio" || rawRole === "socio") {
+    return parsedRole;
+  }
+
+  const rawRoles = claims.roles;
+  if (Array.isArray(rawRoles)) {
+    const roleFromList = rawRoles.find(
+      (role): role is UserRole =>
+        typeof role === "string" && VALID_ROLES.includes(role as UserRole)
+    );
+
+    if (roleFromList) {
+      return roleFromList;
+    }
+  }
+
+  const privilegedRole = VALID_ROLES.find(
+    (role) => role !== "socio" && claims[role] === true
+  );
+
+  return privilegedRole ?? "socio";
+}
+
 function buildUserFromToken(decoded: DecodedIdToken): ApiUser {
   const claims = decoded as Record<string, unknown>;
   const email = decoded.email ?? "";
@@ -66,16 +96,11 @@ function buildUserFromToken(decoded: DecodedIdToken): ApiUser {
       ? email.split("@")[0]
       : "Usuario";
 
-  const rawRole =
-    claims.role ??
-    claims["https://protonlab.cl/role"] ??
-    claims["https://schemas.protonlab.cl/role"];
-
   return {
     id: decoded.uid,
     email,
     name,
-    role: parseRole(rawRole),
+    role: resolveRoleFromClaims(claims),
     company: typeof claims.company === "string" ? claims.company : "Protonlab",
     vendorId: typeof claims.vendorId === "string" ? claims.vendorId : undefined,
     phone: typeof claims.phone === "string" ? claims.phone : undefined,
