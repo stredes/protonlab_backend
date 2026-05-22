@@ -1,4 +1,6 @@
-import { getProductBySlug } from "../../../../../src/server/catalog";
+import { list } from "@vercel/blob";
+
+import { getProductBySlugWithBlobImage } from "../../../../../src/server/catalog";
 import { createPreflightResponse, withCors } from "../../../../../src/utils/cors";
 
 const methods = ["GET", "OPTIONS"];
@@ -15,7 +17,7 @@ export async function GET(
 ): Promise<Response> {
   const { slug } = await context.params;
 
-  return withCors(getProductBySlug(request, slug), request, methods);
+  return withCors(await getProductBySlugWithBlobImage(request, slug, { listBlobs: list }), request, methods);
 }
 
 export async function OPTIONS(request: Request): Promise<Response> {
