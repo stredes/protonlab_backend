@@ -271,6 +271,22 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
         const claims = createClaims(payload, true);
         await auth.setCustomUserClaims(createdUser.uid, claims);
 
+        // Guardar el perfil en Firestore también
+        const { getFirestore } = await import('firebase-admin/firestore');
+        const db = getFirestore();
+        await db.collection('users').doc(createdUser.uid).set({
+          uid: createdUser.uid,
+          email,
+          name,
+          role: claims.role,
+          company: claims.company || null,
+          vendorId: claims.vendorId || null,
+          phone: claims.phone || null,
+          department: claims.department || null,
+          isActive: true,
+          createdAt: new Date(),
+        }, { merge: true });
+
         return ok(
           {
             user: mapUser({
@@ -319,6 +335,19 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
       const claims = createClaims(payload, updatedUser.disabled === false);
       await auth.setCustomUserClaims(userId, claims);
 
+      // Sincronizar actualización con Firestore
+      const { getFirestore } = await import('firebase-admin/firestore');
+      const db = getFirestore();
+      await db.collection('users').doc(userId).set({
+        email: updatedUser.email,
+        name: updatedUser.displayName,
+        role: claims.role,
+        company: claims.company || null,
+        vendorId: claims.vendorId || null,
+        phone: claims.phone || null,
+        department: claims.department || null,
+      }, { merge: true });
+
       return ok({ user: mapUser({ ...updatedUser, customClaims: claims }) }, request);
     },
 
@@ -327,6 +356,12 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
       if (root instanceof Response) return root;
 
       await getAuthAdapter().deleteUser?.(userId);
+
+      // Eliminar de Firestore
+      const { getFirestore } = await import('firebase-admin/firestore');
+      const db = getFirestore();
+      await db.collection('users').doc(userId).delete();
+
       return ok({ deleted: true }, request);
     },
 
@@ -350,6 +385,12 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
 
       const claims = { ...getClaims(updatedUser), isActive };
       await auth.setCustomUserClaims(userId, claims);
+
+      // Actualizar estado en Firestore
+      const { getFirestore } = await import('firebase-admin/firestore');
+      const db = getFirestore();
+      await db.collection('users').doc(userId).set({ isActive }, { merge: true });
+
       return ok({ user: mapUser({ ...updatedUser, customClaims: claims }) }, request);
     },
 
