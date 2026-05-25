@@ -1,5 +1,6 @@
 import { getApps, initializeApp, applicationDefault, cert } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
 
 function normalizePrivateKey(value: string | undefined): string | undefined {
   if (!value) {
@@ -43,3 +44,7 @@ function getFirebaseAdminApp() {
 export function getFirebaseAuth() {
   return getAuth(getFirebaseAdminApp());
 }
+
+const app = getFirebaseAdminApp();
+export const adminDb = getFirestore(app);
+export const adminAuth = getAuth(app);
