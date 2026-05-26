@@ -11,6 +11,7 @@
     "dev": "next dev",
     "start": "next start",
     "test": "vitest run",
+    "seed:demo": "npx tsx scripts/seedDemoData.ts",
     "seed:product-images": "node scripts/seed-product-images-blob.mjs",
     "smoke:connection": "node scripts/smoke-frontend-connection.mjs",
     "smoke:vercel": "node scripts/smoke-frontend-connection.mjs"

@@ -3,7 +3,7 @@ import {
   createSqlAssistantService
 } from "../../../../src/server/sql-assistant";
 import { getCatalogDataset } from "../../../../src/server/catalog";
-import { getFirebaseAuth } from "../../../../src/lib/firebaseAdmin";
+import { adminDb, getFirebaseAuth } from "../../../../src/lib/firebaseAdmin";
 import { ROLES, type Role } from "../../../../src/models/user";
 import { requireAuth, requireRole } from "../../../../src/middleware/auth";
 import { resolveRoleFromClaims } from "../../../../src/server/auth";
@@ -124,18 +124,71 @@ async function resolveUserInventoryAnswer(
   };
 }
 
-function resolveProductCatalogAnswer(request: Request, question: string) {
+async function resolveProductCatalogAnswer(request: Request, question: string) {
   if (!isProductQuestion(question)) {
     return null;
   }
 
+  type ProductEvidence = {
+    name: string;
+    sku: string;
+    availability: string;
+    price?: number;
+    currency: string;
+  };
+
   const startedAt = Date.now();
-  const dataset = getCatalogDataset(request);
-  const products = dataset.products;
+  let products: ProductEvidence[] = getCatalogDataset(request).products.map((product) => ({
+    name: product.name,
+    sku: product.sku,
+    availability: product.availability,
+    price: product.price,
+    currency: product.currency ?? "USD"
+  }));
+  let source = "catálogo operativo del backend";
+
+  try {
+    const snapshot = await adminDb.collection("products").get();
+    if (!snapshot.empty) {
+      products = snapshot.docs.map((document) => {
+        const data = document.data();
+
+        return {
+          name:
+            typeof data.name === "string"
+              ? data.name
+              : typeof data.nombre === "string"
+                ? data.nombre
+                : document.id,
+          sku:
+            typeof data.sku === "string"
+              ? data.sku
+              : typeof data.code === "string"
+                ? data.code
+                : document.id,
+          availability:
+            typeof data.availability === "string"
+              ? data.availability
+              : "sin estado",
+          price:
+            typeof data.price === "number"
+              ? data.price
+              : typeof data.precio === "number"
+                ? data.precio
+                : undefined,
+          currency: typeof data.currency === "string" ? data.currency : "USD"
+        };
+      });
+      source = "Firestore products";
+    }
+  } catch {
+    source = "catálogo operativo del backend";
+  }
+
   const evidence = products.slice(0, maxEvidenceItems).map((product) => {
     const price =
       typeof product.price === "number"
-        ? `, precio ${product.currency ?? "USD"} ${product.price}`
+        ? `, precio ${product.currency} ${product.price}`
         : "";
 
     return `${product.name} (${product.sku}), disponibilidad ${product.availability}${price}`;
@@ -157,7 +210,7 @@ function resolveProductCatalogAnswer(request: Request, question: string) {
       ? `${answer} Como evidencia muestro los primeros ${evidence.length}; hay más productos en el catálogo.`
       : `${answer} La evidencia incluye todos los productos encontrados.`,
     assumptions: [
-      "El conteo se obtuvo desde el catálogo operativo del backend."
+      `El conteo se obtuvo desde ${source}.`
     ],
     evidence: hasEtc ? [...evidence, "etc."] : evidence,
     notice,
