@@ -100,11 +100,19 @@ async function resolveUserInventoryAnswer(
   } while (pageToken);
 
   const elapsedMs = Date.now() - startedAt;
+  let firestoreProfilesTotal: number | null = null;
+  try {
+    const profilesCount = await adminDb.collection("users").count().get();
+    firestoreProfilesTotal = profilesCount.data().count;
+  } catch {
+    firestoreProfilesTotal = null;
+  }
   const hasEtc = total > evidence.length || hasMore;
-  const answer =
-    total === 1
-      ? "En el sistema existe 1 usuario registrado."
-      : `En el sistema existen ${total} usuarios registrados.`;
+  const answer = firestoreProfilesTotal === null
+    ? total === 1
+      ? "En Firebase Auth existe 1 cuenta de usuario registrada."
+      : `En Firebase Auth existen ${total} cuentas de usuario registradas.`
+    : `En Firebase Auth existen ${total} cuentas de usuario registradas; en Firestore hay ${firestoreProfilesTotal} perfiles de usuario visibles para el ERP.`;
   const notice =
     elapsedMs > heavyProcessThresholdMs || total > 1000
       ? "Este cálculo revisa el inventario completo de usuarios. Si el volumen crece, el sistema puede tardar un poco más en procesarlo."
@@ -117,7 +125,8 @@ async function resolveUserInventoryAnswer(
       ? `${answer} Como evidencia muestro los primeros ${evidence.length}; hay más registros en el sistema.`
       : `${answer} La evidencia incluye todos los usuarios encontrados.`,
     assumptions: [
-      "El conteo se obtuvo desde Firebase Auth, no desde una tabla SQL."
+      "Firebase Auth es la fuente de cuentas que pueden iniciar sesión.",
+      "Firestore users es la fuente de perfiles visibles dentro del ERP."
     ],
     evidence: hasEtc ? [...evidence, "etc."] : evidence,
     notice,

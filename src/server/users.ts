@@ -56,6 +56,7 @@ type UserProfileStore = {
 
 type HandlerDependencies = {
   authorizeRoot?: (request: Request) => Promise<AuthenticatedUser | null>;
+  authorizeAdminRead?: (request: Request) => Promise<AuthenticatedUser | null>;
   auth?: AuthAdapter;
   profileStore?: UserProfileStore;
 };
@@ -136,6 +137,25 @@ async function defaultAuthorizeRoot(request: Request): Promise<AuthenticatedUser
   };
 }
 
+async function defaultAuthorizeAdminRead(request: Request): Promise<AuthenticatedUser | null> {
+  const token = getBearerToken(request);
+  if (!token) return null;
+
+  const decodedToken = await getFirebaseAuth().verifyIdToken(token);
+  const claims = decodedToken as Record<string, unknown>;
+  const role = parseRole(resolveRoleFromClaims(claims));
+
+  if (role !== "root" && role !== "admin") {
+    return null;
+  }
+
+  return {
+    uid: decodedToken.uid,
+    email: decodedToken.email ?? null,
+    role
+  };
+}
+
 async function ensureRoot(
   request: Request,
   authorizeRoot: (request: Request) => Promise<AuthenticatedUser | null>
@@ -143,6 +163,30 @@ async function ensureRoot(
   try {
     const user = await authorizeRoot(request);
     if (user?.role === "root") {
+      return user;
+    }
+  } catch {
+    return fail("Token inválido", {
+      status: 401,
+      code: "TOKEN_INVALID",
+      request
+    });
+  }
+
+  return fail("No autorizado", {
+    status: 403,
+    code: "FORBIDDEN",
+    request
+  });
+}
+
+async function ensureAdminRead(
+  request: Request,
+  authorizeAdminRead: (request: Request) => Promise<AuthenticatedUser | null>
+): Promise<AuthenticatedUser | Response> {
+  try {
+    const user = await authorizeAdminRead(request);
+    if (user?.role === "root" || user?.role === "admin") {
       return user;
     }
   } catch {
@@ -231,21 +275,24 @@ async function getProfileStore(
 
 export function createUserManagementHandler(dependencies: HandlerDependencies = {}) {
   const authorizeRoot = dependencies.authorizeRoot ?? defaultAuthorizeRoot;
+  const authorizeAdminRead =
+    dependencies.authorizeAdminRead ??
+    (dependencies.authorizeRoot ? dependencies.authorizeRoot : defaultAuthorizeAdminRead);
   const getAuthAdapter = () => dependencies.auth ?? getFirebaseAuth();
   const resolveProfileStore = () => getProfileStore(dependencies);
 
   return {
     async list(request: Request): Promise<Response> {
-      const root = await ensureRoot(request, authorizeRoot);
-      if (root instanceof Response) return root;
+      const authorized = await ensureAdminRead(request, authorizeAdminRead);
+      if (authorized instanceof Response) return authorized;
 
       const users = await listAllUsers(getAuthAdapter());
       return ok({ users, items: users }, request);
     },
 
     async listByRole(request: Request, role: string): Promise<Response> {
-      const root = await ensureRoot(request, authorizeRoot);
-      if (root instanceof Response) return root;
+      const authorized = await ensureAdminRead(request, authorizeAdminRead);
+      if (authorized instanceof Response) return authorized;
 
       const requestedRole = parseRole(role);
       const vendorId = new URL(request.url).searchParams.get("vendorId");
@@ -258,8 +305,8 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
     },
 
     async get(request: Request, userId: string): Promise<Response> {
-      const root = await ensureRoot(request, authorizeRoot);
-      if (root instanceof Response) return root;
+      const authorized = await ensureAdminRead(request, authorizeAdminRead);
+      if (authorized instanceof Response) return authorized;
 
       const auth = getAuthAdapter();
 
