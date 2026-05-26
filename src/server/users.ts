@@ -45,9 +45,19 @@ type AuthAdapter = {
   setCustomUserClaims: (uid: string, customUserClaims: Record<string, unknown>) => Promise<void>;
 };
 
+type UserProfileStore = {
+  set: (
+    uid: string,
+    profile: Record<string, unknown>,
+    options?: { merge: boolean }
+  ) => Promise<void>;
+  delete: (uid: string) => Promise<void>;
+};
+
 type HandlerDependencies = {
   authorizeRoot?: (request: Request) => Promise<AuthenticatedUser | null>;
   auth?: AuthAdapter;
+  profileStore?: UserProfileStore;
 };
 
 const VALID_USER_ROLES = ROLES.filter((role): role is UserRole => role !== "cliente");
@@ -193,9 +203,36 @@ async function listAllUsers(auth: AuthAdapter): Promise<ApiUser[]> {
   return users;
 }
 
+async function createFirestoreProfileStore(): Promise<UserProfileStore> {
+  const { getFirestore } = await import("firebase-admin/firestore");
+  const db = getFirestore();
+
+  return {
+    set: async (uid, profile, options) => {
+      const document = db.collection("users").doc(uid);
+      if (options) {
+        await document.set(profile, options);
+        return;
+      }
+
+      await document.set(profile);
+    },
+    delete: async (uid) => {
+      await db.collection("users").doc(uid).delete();
+    }
+  };
+}
+
+async function getProfileStore(
+  dependencies: HandlerDependencies
+): Promise<UserProfileStore> {
+  return dependencies.profileStore ?? createFirestoreProfileStore();
+}
+
 export function createUserManagementHandler(dependencies: HandlerDependencies = {}) {
   const authorizeRoot = dependencies.authorizeRoot ?? defaultAuthorizeRoot;
   const getAuthAdapter = () => dependencies.auth ?? getFirebaseAuth();
+  const resolveProfileStore = () => getProfileStore(dependencies);
 
   return {
     async list(request: Request): Promise<Response> {
@@ -268,10 +305,8 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
         const claims = createClaims(payload, true);
         await auth.setCustomUserClaims(createdUser.uid, claims);
 
-        // Guardar el perfil en Firestore también
-        const { getFirestore } = await import('firebase-admin/firestore');
-        const db = getFirestore();
-        await db.collection('users').doc(createdUser.uid).set({
+        const profileStore = await resolveProfileStore();
+        await profileStore.set(createdUser.uid, {
           uid: createdUser.uid,
           email,
           name,
@@ -332,10 +367,8 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
       const claims = createClaims(payload, updatedUser.disabled === false);
       await auth.setCustomUserClaims(userId, claims);
 
-      // Sincronizar actualización con Firestore
-      const { getFirestore } = await import('firebase-admin/firestore');
-      const db = getFirestore();
-      await db.collection('users').doc(userId).set({
+      const profileStore = await resolveProfileStore();
+      await profileStore.set(userId, {
         email: updatedUser.email,
         name: updatedUser.displayName,
         role: claims.role,
@@ -354,10 +387,8 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
 
       await getAuthAdapter().deleteUser?.(userId);
 
-      // Eliminar de Firestore
-      const { getFirestore } = await import('firebase-admin/firestore');
-      const db = getFirestore();
-      await db.collection('users').doc(userId).delete();
+      const profileStore = await resolveProfileStore();
+      await profileStore.delete(userId);
 
       return ok({ deleted: true }, request);
     },
@@ -383,10 +414,8 @@ export function createUserManagementHandler(dependencies: HandlerDependencies = 
       const claims = { ...getClaims(updatedUser), isActive };
       await auth.setCustomUserClaims(userId, claims);
 
-      // Actualizar estado en Firestore
-      const { getFirestore } = await import('firebase-admin/firestore');
-      const db = getFirestore();
-      await db.collection('users').doc(userId).set({ isActive }, { merge: true });
+      const profileStore = await resolveProfileStore();
+      await profileStore.set(userId, { isActive }, { merge: true });
 
       return ok({ user: mapUser({ ...updatedUser, customClaims: claims }) }, request);
     },

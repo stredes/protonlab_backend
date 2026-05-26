@@ -1,8 +1,25 @@
 import { describe, expect, it, vi } from "vitest";
 
+import {
+  isProductQuestion,
+  isUserQuestion
+} from "../../src/server/sql-assistant-intent";
 import { createSqlAssistantHandler } from "../../src/server/sql-assistant";
 
 describe("sql assistant route handler", () => {
+  it("detects user inventory questions even with common typos", () => {
+    expect(isUserQuestion("cuantos susarios existen")).toBe(true);
+    expect(isUserQuestion("cuantos usarios hay en el sistema")).toBe(true);
+    expect(isUserQuestion("lista usuarioos")).toBe(true);
+    expect(isUserQuestion("cuantos pedidos existen")).toBe(false);
+  });
+
+  it("detects product catalog questions for direct answers", () => {
+    expect(isProductQuestion("cuantos productos existen")).toBe(true);
+    expect(isProductQuestion("lista el catalogo")).toBe(true);
+    expect(isProductQuestion("cuantos usuarios existen")).toBe(false);
+  });
+
   it("returns a standard payload with SQL and explanation", async () => {
     const handler = createSqlAssistantHandler({
       generateQuery: vi.fn().mockResolvedValue({
@@ -27,13 +44,81 @@ describe("sql assistant route handler", () => {
     );
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({
+    await expect(response.json()).resolves.toMatchObject({
       success: true,
       data: {
         sql: "SELECT * FROM orders WHERE status = 'pendiente' LIMIT 10;",
         explanation: "Devuelve pedidos pendientes.",
         assumptions: ["La tabla orders contiene la columna status."],
         model: "openrouter/free-model"
+      }
+    });
+  });
+
+  it("accepts requests without a manual schema so the backend can use its context registry", async () => {
+    const generateQuery = vi.fn().mockResolvedValue({
+      sql: "SELECT id, status FROM orders LIMIT 10;",
+      explanation: "Consulta pedidos desde el catálogo ERP.",
+      assumptions: [],
+      model: "qwen2.5-coder:3b"
+    });
+    const handler = createSqlAssistantHandler({
+      generateQuery
+    });
+
+    const response = await handler(
+      new Request("http://localhost/api/ai/sql-assistant", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          question: "Muéstrame pedidos"
+        })
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(generateQuery).toHaveBeenCalledWith({
+      question: "Muéstrame pedidos"
+    });
+  });
+
+  it("returns a human answer when a direct data resolver can answer the request", async () => {
+    const generateQuery = vi.fn();
+    const handler = createSqlAssistantHandler({
+      generateQuery,
+      resolveHumanAnswer: vi.fn().mockResolvedValue({
+        answer: "En el sistema existen 2 usuarios.",
+        evidence: ["Admin <admin@protonlab.cl>", "Vendedor <seller@protonlab.cl>"],
+        notice: null,
+        sql: "",
+        explanation: "Conteo obtenido desde Firebase Auth.",
+        assumptions: [],
+        model: "firebase-admin"
+      })
+    });
+
+    const response = await handler(
+      new Request("http://localhost/api/ai/sql-assistant", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          question: "Cuántos usuarios existen en el sistema"
+        })
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(generateQuery).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toMatchObject({
+      success: true,
+      data: {
+        answer: "En el sistema existen 2 usuarios.",
+        evidence: ["Admin <admin@protonlab.cl>", "Vendedor <seller@protonlab.cl>"],
+        model: "firebase-admin"
       }
     });
   });

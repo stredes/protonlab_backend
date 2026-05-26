@@ -20,8 +20,22 @@ function getAllowedOrigins(): string[] {
 }
 
 function resolveOrigin(request: Request): string {
-  // Retornamos '*' para permitir cualquier origen durante el desarrollo
-  return "*";
+  const requestOrigin = request.headers.get("origin");
+  const allowedOrigins = getAllowedOrigins();
+
+  if (allowedOrigins.includes("*")) {
+    return "*";
+  }
+
+  if (
+    requestOrigin &&
+    (allowedOrigins.includes(requestOrigin) ||
+      isTrustedVercelFrontendPreview(requestOrigin))
+  ) {
+    return requestOrigin;
+  }
+
+  return allowedOrigins[0] ?? "*";
 }
 
 function isTrustedVercelFrontendPreview(origin: string): boolean {

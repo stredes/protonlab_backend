@@ -5,8 +5,11 @@ import { useEffect, useState } from "react";
 
 type AssistantResponse = {
   sql: string;
+  answer: string;
   explanation: string;
   assumptions: string[];
+  evidence: string[];
+  notice: string | null;
   model: string;
 };
 
@@ -260,26 +263,56 @@ export function AdminSqlAssistant() {
             <div style={{ display: "grid", gap: "16px" }}>
               <div>
                 <p style={{ margin: "0 0 8px", fontWeight: 700, color: "#292524" }}>
-                  SQL
+                  Respuesta
                 </p>
-                <pre
-                  style={{
-                    margin: 0,
-                    padding: "16px",
-                    borderRadius: "14px",
-                    backgroundColor: "#1c1917",
-                    color: "#f5f5f4",
-                    overflowX: "auto",
-                    fontSize: "13px"
-                  }}
-                >
-                  <code>{result.sql}</code>
-                </pre>
+                <p style={{ margin: 0, color: "#44403c", lineHeight: 1.6 }}>
+                  {result.answer || result.explanation}
+                </p>
               </div>
+
+              {result.notice ? (
+                <p style={{ margin: 0, color: "#92400e", lineHeight: 1.6 }}>
+                  {result.notice}
+                </p>
+              ) : null}
+
+              {result.sql.trim() ? (
+                <div>
+                  <p style={{ margin: "0 0 8px", fontWeight: 700, color: "#292524" }}>
+                    SQL
+                  </p>
+                  <pre
+                    style={{
+                      margin: 0,
+                      padding: "16px",
+                      borderRadius: "14px",
+                      backgroundColor: "#1c1917",
+                      color: "#f5f5f4",
+                      overflowX: "auto",
+                      fontSize: "13px"
+                    }}
+                  >
+                    <code>{result.sql}</code>
+                  </pre>
+                </div>
+              ) : null}
+
+              {result.evidence.length > 0 ? (
+                <div>
+                  <p style={{ margin: "0 0 8px", fontWeight: 700, color: "#292524" }}>
+                    Evidencia
+                  </p>
+                  <ul style={{ margin: 0, paddingLeft: "18px", color: "#57534e", lineHeight: 1.6 }}>
+                    {result.evidence.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
 
               <div>
                 <p style={{ margin: "0 0 8px", fontWeight: 700, color: "#292524" }}>
-                  Explicación
+                  Explicación técnica
                 </p>
                 <p style={{ margin: 0, color: "#44403c", lineHeight: 1.6 }}>
                   {result.explanation}

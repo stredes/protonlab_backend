@@ -12,13 +12,18 @@ describe("user management handler", () => {
       }),
       setCustomUserClaims: vi.fn()
     };
+    const profileStore = {
+      set: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn().mockResolvedValue(undefined)
+    };
     const handler = createUserManagementHandler({
       authorizeRoot: vi.fn().mockResolvedValue({
         uid: "root-1",
         email: "root@protonlab.cl",
         role: "root"
       }),
-      auth
+      auth,
+      profileStore
     });
 
     const response = await handler.create(
@@ -54,6 +59,18 @@ describe("user management handler", () => {
         department: "Ventas",
         isActive: true
       })
+    );
+    expect(profileStore.set).toHaveBeenCalledWith(
+      "user-123",
+      expect.objectContaining({
+        uid: "user-123",
+        email: "seller@protonlab.cl",
+        name: "Vendedor Proton",
+        role: "vendedor",
+        department: "Ventas",
+        isActive: true
+      }),
+      { merge: true }
     );
     await expect(response.json()).resolves.toMatchObject({
       success: true,
