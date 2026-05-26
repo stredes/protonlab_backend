@@ -8,6 +8,7 @@ import { ROLES, type Role } from "../../../../src/models/user";
 import { requireAuth, requireRole } from "../../../../src/middleware/auth";
 import { resolveRoleFromClaims } from "../../../../src/server/auth";
 import {
+  buildActionTemplate,
   isProductQuestion,
   isUserQuestion
 } from "../../../../src/server/sql-assistant-intent";
@@ -124,6 +125,94 @@ async function resolveUserInventoryAnswer(
   };
 }
 
+async function resolveWriteActionTemplate(
+  request: Request,
+  question: string
+) {
+  const template = buildActionTemplate(question);
+  if (!template) {
+    return null;
+  }
+
+  const token = getBearerToken(request);
+  if (!token) {
+    return null;
+  }
+
+  const auth = getFirebaseAuth();
+  const decodedToken = await auth.verifyIdToken(token);
+  const role = resolveUserRole(
+    resolveRoleFromClaims(decodedToken as Record<string, unknown>)
+  );
+
+  if (role !== "root" && role !== "admin") {
+    return {
+      sql: "",
+      answer:
+        "Entendí que quieres realizar una acción de escritura, pero tu rol no permite crear, modificar o borrar datos administrativos.",
+      explanation:
+        "Las acciones de escritura requieren rol root o admin y confirmación humana.",
+      assumptions: ["El modelo no ejecutó ningún cambio en la base de datos."],
+      evidence: [`Acción detectada: ${template.title}`],
+      notice: "No se realizó ningún cambio.",
+      model: "intent-classifier"
+    };
+  }
+
+  const hasField = (field: string): boolean => {
+    if (template.detectedFields[field] !== undefined) {
+      return true;
+    }
+
+    if (field === "emailOrUid") {
+      return (
+        template.detectedFields.email !== undefined ||
+        template.detectedFields.uid !== undefined
+      );
+    }
+
+    if (field === "productIdOrSku") {
+      return (
+        template.detectedFields.productId !== undefined ||
+        template.detectedFields.sku !== undefined
+      );
+    }
+
+    return false;
+  };
+  const missingFields = template.requiredFields.filter((field) => !hasField(field));
+  const evidence = [
+    `Acción detectada: ${template.title}`,
+    `Entidad: ${template.entity}`,
+    `Campos requeridos: ${template.requiredFields.join(", ")}`,
+    `Campos opcionales: ${template.optionalFields.join(", ") || "ninguno"}`,
+    `Campos detectados: ${
+      Object.keys(template.detectedFields).length > 0
+        ? JSON.stringify(template.detectedFields)
+        : "ninguno"
+    }`
+  ];
+
+  return {
+    sql: "",
+    answer:
+      missingFields.length > 0
+        ? `Entendí que quieres ${template.title.toLowerCase()}. Para continuar necesito completar: ${missingFields.join(", ")}.`
+        : `Entendí que quieres ${template.title.toLowerCase()}. Tengo los datos principales; falta confirmación antes de ejecutar el cambio real.`,
+    explanation:
+      "El clasificador de intención detectó una acción de escritura y generó una plantilla segura. El backend no ejecuta cambios hasta validar campos, permisos y confirmación.",
+    assumptions: [
+      "La IA interpreta la intención, pero el backend valida y ejecuta.",
+      "Toda creación, edición o eliminación debe quedar auditada."
+    ],
+    evidence,
+    notice: template.destructive
+      ? "Acción destructiva detectada. Se requiere confirmación explícita antes de borrar o desactivar datos."
+      : "Plantilla generada. No se realizó ningún cambio en la base de datos.",
+    model: "intent-classifier"
+  };
+}
+
 async function resolveProductCatalogAnswer(request: Request, question: string) {
   if (!isProductQuestion(question)) {
     return null;
@@ -223,8 +312,9 @@ async function resolveDirectOperationalAnswer(
   question: string
 ) {
   return (
+    (await resolveWriteActionTemplate(request, question)) ??
     (await resolveUserInventoryAnswer(request, question)) ??
-    resolveProductCatalogAnswer(request, question)
+    (await resolveProductCatalogAnswer(request, question))
   );
 }
 

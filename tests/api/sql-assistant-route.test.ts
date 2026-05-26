@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  buildActionTemplate,
+  classifyAssistantIntent,
   isProductQuestion,
   isUserQuestion
 } from "../../src/server/sql-assistant-intent";
@@ -18,6 +20,26 @@ describe("sql assistant route handler", () => {
     expect(isProductQuestion("cuantos productos existen")).toBe(true);
     expect(isProductQuestion("lista el catalogo")).toBe(true);
     expect(isProductQuestion("cuantos usuarios existen")).toBe(false);
+  });
+
+  it("classifies write intents with typo tolerance and builds safe templates", () => {
+    expect(classifyAssistantIntent("crear prodcuto nombre Analizador precio 1200").action).toBe("create");
+    expect(classifyAssistantIntent("crear prodcuto nombre Analizador precio 1200").entity).toBe("product");
+    expect(classifyAssistantIntent("borrar usario admin@protonlab.cl").action).toBe("delete");
+    expect(classifyAssistantIntent("borrar usario admin@protonlab.cl").entity).toBe("user");
+
+    expect(buildActionTemplate("crear prodcuto nombre Analizador precio 1200 stock 5 sku ABC-1")).toMatchObject({
+      action: "create",
+      entity: "product",
+      title: "Crear producto",
+      confirmationRequired: true,
+      detectedFields: {
+        name: "analizador",
+        price: 1200,
+        stock: 5,
+        sku: "ABC-1"
+      }
+    });
   });
 
   it("returns a standard payload with SQL and explanation", async () => {
