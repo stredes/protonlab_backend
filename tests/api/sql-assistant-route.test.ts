@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildActionTemplate,
   classifyAssistantIntent,
+  isConfirmedProductCreate,
   isProductQuestion,
   isUserQuestion
 } from "../../src/server/sql-assistant-intent";
@@ -40,6 +41,26 @@ describe("sql assistant route handler", () => {
         sku: "ABC-1"
       }
     });
+  });
+
+  it("parses product template continuations and confirmation commands", () => {
+    expect(classifyAssistantIntent("florero,123123,floreria,1250,2,availability")).toMatchObject({
+      action: "create",
+      entity: "product"
+    });
+    expect(buildActionTemplate("florero,123123,floreria,1250,2,availability")).toMatchObject({
+      action: "create",
+      entity: "product",
+      detectedFields: {
+        name: "florero",
+        sku: "123123",
+        categoryId: "floreria",
+        price: 1250,
+        stock: 2
+      }
+    });
+    expect(buildActionTemplate("florero,123123,floreria,1250,2,availability")?.detectedFields.availability).toBeUndefined();
+    expect(isConfirmedProductCreate("confirmar crear producto florero,123123,floreria,1250,2,disponible")).toBe(true);
   });
 
   it("returns a standard payload with SQL and explanation", async () => {

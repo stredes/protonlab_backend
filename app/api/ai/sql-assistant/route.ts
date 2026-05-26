@@ -9,6 +9,7 @@ import { requireAuth, requireRole } from "../../../../src/middleware/auth";
 import { resolveRoleFromClaims } from "../../../../src/server/auth";
 import {
   buildActionTemplate,
+  isConfirmedProductCreate,
   isProductQuestion,
   isUserQuestion
 } from "../../../../src/server/sql-assistant-intent";
@@ -18,6 +19,7 @@ const methods = ["POST", "OPTIONS"];
 const sqlAssistantService = createSqlAssistantService();
 const maxEvidenceItems = 10;
 const heavyProcessThresholdMs = 3000;
+const validProductAvailability = new Set(["disponible", "bajo_pedido", "sujeto_stock"]);
 
 function resolveUserRole(value: unknown): Role {
   if (typeof value === "string" && ROLES.includes(value as Role)) {
@@ -46,6 +48,37 @@ function getBearerToken(request: Request): string | null {
 
   const [scheme, token] = authorization.split(" ");
   return scheme === "Bearer" && token ? token : null;
+}
+
+function slugify(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+function normalizeCategoryId(value: string): string {
+  const normalized = slugify(value);
+  return normalized.startsWith("cat-") ? normalized : `cat-${normalized || "general"}`;
+}
+
+function getRequiredTemplateString(
+  fields: Record<string, string | number | boolean>,
+  key: string
+): string | null {
+  const value = fields[key];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function getRequiredTemplateNumber(
+  fields: Record<string, string | number | boolean>,
+  key: string
+): number | null {
+  const value = fields[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 async function resolveUserInventoryAnswer(
@@ -168,6 +201,119 @@ async function resolveWriteActionTemplate(
     };
   }
 
+  if (
+    isConfirmedProductCreate(question) &&
+    template.action === "create" &&
+    template.entity === "product"
+  ) {
+    const name = getRequiredTemplateString(template.detectedFields, "name");
+    const sku = getRequiredTemplateString(template.detectedFields, "sku");
+    const rawCategoryId = getRequiredTemplateString(template.detectedFields, "categoryId");
+    const price = getRequiredTemplateNumber(template.detectedFields, "price");
+    const stock = getRequiredTemplateNumber(template.detectedFields, "stock");
+    const availability = getRequiredTemplateString(template.detectedFields, "availability");
+
+    if (
+      !name ||
+      !sku ||
+      !rawCategoryId ||
+      price === null ||
+      stock === null ||
+      !availability ||
+      !validProductAvailability.has(availability)
+    ) {
+      return {
+        sql: "",
+        answer:
+          "Entendí la confirmación, pero faltan datos válidos para crear el producto. Usa: confirmar crear producto nombre,sku,categoria,precio,stock,disponible.",
+        explanation:
+          "La creación real requiere todos los campos obligatorios y availability debe ser disponible, bajo_pedido o sujeto_stock.",
+        assumptions: ["No se realizó ningún cambio en Firestore."],
+        evidence: [
+          `Campos detectados: ${JSON.stringify(template.detectedFields)}`,
+          "Formato esperado: confirmar crear producto nombre,sku,categoria,precio,stock,disponible"
+        ],
+        notice: "No se creó el producto.",
+        model: "intent-classifier"
+      };
+    }
+
+    const categoryId = normalizeCategoryId(rawCategoryId);
+    const slug = slugify(name);
+    const productId = `prod-${slug}-${sku.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+    const product = {
+      id: productId,
+      sku,
+      slug,
+      name,
+      brand: "",
+      family: rawCategoryId,
+      categoryId,
+      availability,
+      price,
+      stock,
+      currency: "USD",
+      image: "",
+      imageUrl: "",
+      images: [],
+      href: `/productos/${slug}`,
+      requiresInstallation: false,
+      requiresMaintenance: false,
+      shortDescription: "",
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: decodedToken.uid,
+      createdByEmail: decodedToken.email ?? null,
+      source: "admin-assistant"
+    };
+
+    await adminDb.collection("categories").doc(categoryId).set(
+      {
+        id: categoryId,
+        name: rawCategoryId,
+        slug: categoryId.replace(/^cat-/, ""),
+        description: rawCategoryId,
+        href: `/productos?categoryId=${categoryId}`,
+        updatedAt: new Date(),
+        source: "admin-assistant"
+      },
+      { merge: true }
+    );
+    await adminDb.collection("products").doc(productId).set(product, { merge: true });
+    await adminDb.collection("audit_logs").add({
+      action: "AI_CREATE_PRODUCT",
+      actorUid: decodedToken.uid,
+      actorEmail: decodedToken.email ?? null,
+      actorRole: role,
+      targetCollection: "products",
+      targetId: productId,
+      payload: product,
+      createdAt: new Date()
+    });
+
+    return {
+      sql: "",
+      answer: `Producto creado correctamente: ${name} (${sku}). Ya quedó registrado en Firestore y podrá aparecer en el catálogo.`,
+      explanation:
+        "La acción fue confirmada explícitamente, validada por rol admin/root y ejecutada contra Firestore.",
+      assumptions: [
+        "La categoría se creó o actualizó automáticamente si no existía.",
+        "El producto quedó marcado como activo."
+      ],
+      evidence: [
+        `Producto: ${name}`,
+        `SKU: ${sku}`,
+        `Categoría: ${categoryId}`,
+        `Precio: ${price}`,
+        `Stock: ${stock}`,
+        `Disponibilidad: ${availability}`
+      ],
+      notice: null,
+      model: "intent-classifier"
+    };
+  }
+
   const hasField = (field: string): boolean => {
     if (template.detectedFields[field] !== undefined) {
       return true;
@@ -207,7 +353,9 @@ async function resolveWriteActionTemplate(
     answer:
       missingFields.length > 0
         ? `Entendí que quieres ${template.title.toLowerCase()}. Para continuar necesito completar: ${missingFields.join(", ")}.`
-        : `Entendí que quieres ${template.title.toLowerCase()}. Tengo los datos principales; falta confirmación antes de ejecutar el cambio real.`,
+        : template.action === "create" && template.entity === "product"
+          ? "Tengo los datos para crear el producto. Si quieres ejecutarlo en la base real, responde: confirmar crear producto nombre,sku,categoria,precio,stock,disponible."
+          : `Entendí que quieres ${template.title.toLowerCase()}. Tengo los datos principales; falta confirmación antes de ejecutar el cambio real.`,
     explanation:
       "El clasificador de intención detectó una acción de escritura y generó una plantilla segura. El backend no ejecuta cambios hasta validar campos, permisos y confirmación.",
     assumptions: [

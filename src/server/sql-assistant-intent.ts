@@ -35,6 +35,8 @@ export type ActionTemplate = {
   destructive: boolean;
 };
 
+const productAvailabilityValues = ["disponible", "bajo_pedido", "sujeto_stock"] as const;
+
 export function normalizeQuestion(value: string): string {
   return value
     .normalize("NFD")
@@ -202,8 +204,57 @@ function extractDetectedFields(question: string, entity: AssistantEntity): Recor
   return fields;
 }
 
+function parseProductCsvFields(question: string): Record<string, string | number | boolean> | null {
+  const normalized = normalizeQuestion(question)
+    .replace(/^confirmar\s+crear\s+producto\s*[:,-]?\s*/i, "")
+    .replace(/^crear\s+producto\s*[:,-]?\s*/i, "")
+    .trim();
+  const parts = normalized
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length < 5 || parts.length > 8) {
+    return null;
+  }
+
+  const [name, sku, categoryId, price, stock, availability] = parts;
+  const fields: Record<string, string | number | boolean> = {
+    name,
+    sku: sku.toUpperCase(),
+    categoryId,
+    price: Number(price.replace(",", ".")),
+    stock: Number.parseInt(stock, 10)
+  };
+
+  if (availability && productAvailabilityValues.includes(availability as typeof productAvailabilityValues[number])) {
+    fields.availability = availability;
+  }
+
+  return fields;
+}
+
+export function isProductCsvTemplate(question: string): boolean {
+  return parseProductCsvFields(question) !== null;
+}
+
+export function isConfirmedProductCreate(question: string): boolean {
+  return /^confirmar\s+crear\s+producto\b/i.test(normalizeQuestion(question));
+}
+
 export function classifyAssistantIntent(question: string): AssistantIntent {
   const normalizedQuestion = normalizeQuestion(question);
+  if (isProductCsvTemplate(question)) {
+    return {
+      action: "create",
+      entity: "product",
+      confidence: 0.9,
+      normalizedQuestion,
+      requiresTemplate: true,
+      requiresConfirmation: true
+    };
+  }
+
   const words = wordsFrom(question);
   const action = detectAction(words);
   const entity = detectEntity(words);
@@ -233,7 +284,13 @@ export function buildActionTemplate(question: string): ActionTemplate | null {
   }
 
   const destructive = intent.action === "delete";
-  const detectedFields = extractDetectedFields(question, intent.entity);
+  const detectedFields =
+    intent.action === "create" && intent.entity === "product"
+      ? {
+          ...extractDetectedFields(question, intent.entity),
+          ...(parseProductCsvFields(question) ?? {})
+        }
+      : extractDetectedFields(question, intent.entity);
   const templates: Record<string, Omit<ActionTemplate, "detectedFields">> = {
     "create:user": {
       action: "create",
