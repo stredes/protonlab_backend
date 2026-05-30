@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { GET as exportAudit } from "../../app/api/audit/export/route";
 import { GET as getOrder, PATCH as patchOrder } from "../../app/api/orders/[orderId]/route";
+import { POST as approvePurchaseOrder } from "../../app/api/purchase-orders/[purchaseOrderId]/approve/route";
+import { GET as getPurchaseOrders, POST as postPurchaseOrder } from "../../app/api/purchase-orders/route";
+import { GET as getInvoices, POST as postInvoice } from "../../app/api/invoices/route";
 import { GET as getOrders } from "../../app/api/orders/route";
 import { GET as getQuote, PATCH as patchQuote } from "../../app/api/quotes/[quoteId]/route";
 import { POST as convertQuote } from "../../app/api/quotes/[quoteId]/convert-to-order/route";
@@ -161,5 +164,98 @@ describe("operations routes", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-disposition")).toContain("protonlab-auditoria");
     expect(text).toContain('"type","id","status","customerEmail","createdAt","updatedAt"');
+  });
+
+  it("creates purchase orders, enforces role approval, and creates invoices", async () => {
+    const ordersResponse = await getOrders(new Request("http://localhost/api/orders"));
+    const ordersPayload = await ordersResponse.json();
+    const orderId = ordersPayload.data.items[0].id;
+
+    const purchaseOrderResponse = await postPurchaseOrder(
+      new Request("http://localhost/api/purchase-orders", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-user-role": "socio" },
+        body: JSON.stringify({
+          sourceOrderId: orderId,
+          buyerReference: "OC-CLIENTE-100",
+          requestedBy: "Compras Cliente"
+        })
+      })
+    );
+
+    expect(purchaseOrderResponse.status).toBe(201);
+    const purchaseOrderPayload = await purchaseOrderResponse.json();
+    const purchaseOrderId = purchaseOrderPayload.data.id;
+    expect(purchaseOrderPayload).toMatchObject({
+      success: true,
+      data: {
+        sourceOrderId: orderId,
+        status: "pendiente_aprobacion",
+        approvals: []
+      }
+    });
+
+    const forbiddenApproval = await approvePurchaseOrder(
+      new Request(`http://localhost/api/purchase-orders/${purchaseOrderId}/approve`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-user-role": "socio" },
+        body: JSON.stringify({ approved: true })
+      }),
+      { params: Promise.resolve({ purchaseOrderId }) }
+    );
+    expect(forbiddenApproval.status).toBe(403);
+
+    const adminApproval = await approvePurchaseOrder(
+      new Request(`http://localhost/api/purchase-orders/${purchaseOrderId}/approve`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-user-role": "admin" },
+        body: JSON.stringify({ approved: true, notes: "Aprobada por administración" })
+      }),
+      { params: Promise.resolve({ purchaseOrderId }) }
+    );
+
+    expect(adminApproval.status).toBe(200);
+    await expect(adminApproval.json()).resolves.toMatchObject({
+      success: true,
+      data: {
+        status: "aprobada",
+        approvals: [expect.objectContaining({ role: "admin", approved: true })]
+      }
+    });
+
+    const invoiceResponse = await postInvoice(
+      new Request("http://localhost/api/invoices", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-user-role": "admin" },
+        body: JSON.stringify({
+          sourceOrderId: orderId,
+          purchaseOrderId,
+          billingReference: "FAC-CLIENTE-100"
+        })
+      })
+    );
+
+    expect(invoiceResponse.status).toBe(201);
+    await expect(invoiceResponse.json()).resolves.toMatchObject({
+      success: true,
+      data: {
+        sourceOrderId: orderId,
+        purchaseOrderId,
+        status: "emitida",
+        paymentStatus: "pendiente"
+      }
+    });
+
+    const purchaseOrdersResponse = await getPurchaseOrders(new Request("http://localhost/api/purchase-orders"));
+    await expect(purchaseOrdersResponse.json()).resolves.toMatchObject({
+      success: true,
+      data: { total: expect.any(Number) }
+    });
+
+    const invoicesResponse = await getInvoices(new Request("http://localhost/api/invoices"));
+    await expect(invoicesResponse.json()).resolves.toMatchObject({
+      success: true,
+      data: { total: expect.any(Number) }
+    });
   });
 });

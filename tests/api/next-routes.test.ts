@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { GET as getHealth } from "../../app/api/health/route";
-import { GET as getReady } from "../../app/api/ready/route";
+import { GET as getHealth, OPTIONS as optionsHealth } from "../../app/api/health/route";
+import { GET as getReady, OPTIONS as optionsReady } from "../../app/api/ready/route";
 
 describe("next route handlers", () => {
   it("returns health payload from app/api/health", async () => {
@@ -40,5 +40,27 @@ describe("next route handlers", () => {
         }
       }
     });
+  });
+
+  it("returns CORS headers for health and ready preflight requests from frontend previews", async () => {
+    const request = new Request("http://localhost/api/health", {
+      method: "OPTIONS",
+      headers: {
+        origin: "https://front-protonlab-kc93ljtv4-gianlucassanmartin-gmailcoms-projects.vercel.app",
+        "access-control-request-method": "GET"
+      }
+    });
+
+    const healthResponse = await optionsHealth(request);
+    const readyResponse = await optionsReady(request);
+
+    expect(healthResponse.status).toBe(204);
+    expect(readyResponse.status).toBe(204);
+    expect(healthResponse.headers.get("access-control-allow-origin")).toBe(
+      "https://front-protonlab-kc93ljtv4-gianlucassanmartin-gmailcoms-projects.vercel.app"
+    );
+    expect(readyResponse.headers.get("access-control-allow-origin")).toBe(
+      "https://front-protonlab-kc93ljtv4-gianlucassanmartin-gmailcoms-projects.vercel.app"
+    );
   });
 });

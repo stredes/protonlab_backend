@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { GET as getStatus } from "../../app/api/status/route";
+import { GET as getStatus, OPTIONS as optionsStatus } from "../../app/api/status/route";
 
 describe("status route", () => {
   it("returns deployment and integration status", async () => {
@@ -25,5 +25,23 @@ describe("status route", () => {
         summary: expect.any(Object)
       })
     );
+  });
+
+  it("returns CORS headers for status preflight requests from frontend previews", async () => {
+    const origin =
+      "https://front-protonlab-kc93ljtv4-gianlucassanmartin-gmailcoms-projects.vercel.app";
+    const response = await optionsStatus(
+      new Request("http://localhost/api/status", {
+        method: "OPTIONS",
+        headers: {
+          origin,
+          "access-control-request-method": "GET"
+        }
+      })
+    );
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe(origin);
+    expect(response.headers.get("access-control-allow-methods")).toContain("GET");
   });
 });
