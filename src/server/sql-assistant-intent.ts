@@ -71,12 +71,16 @@ function levenshteinDistance(left: string, right: string): number {
 }
 
 function isCloseWord(word: string, expected: string): boolean {
-  if (word === expected || word.includes(expected) || expected.includes(word)) {
+  if (word === expected) {
     return true;
   }
 
   if (word.length < 4 || expected.length < 4) {
     return false;
+  }
+
+  if (word.includes(expected) || expected.includes(word)) {
+    return true;
   }
 
   const distance = levenshteinDistance(word, expected);
@@ -121,6 +125,12 @@ export function isProductQuestion(question: string): boolean {
     hasAnyWord(words, ["producto", "productos", "catalogo", "inventario", "item", "items"]) &&
     hasAnyWord(words, ["cuanto", "cuantos", "cantidad", "existen", "hay", "lista", "listar", "muestra", "mostrar", "ver"])
   );
+}
+
+export function isGreetingQuestion(question: string): boolean {
+  const normalized = normalizeQuestion(question).trim();
+
+  return /^(hola|buenas|buenos dias|buen dia|buenas tardes|buenas noches|hello|hi)$/.test(normalized);
 }
 
 function detectAction(words: string[]): AssistantAction {

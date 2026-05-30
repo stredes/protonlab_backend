@@ -9,6 +9,7 @@ import { requireAuth, requireRole } from "../../../../src/middleware/auth";
 import { resolveRoleFromClaims } from "../../../../src/server/auth";
 import {
   buildActionTemplate,
+  isGreetingQuestion,
   isConfirmedProductCreate,
   isProductQuestion,
   isUserQuestion
@@ -164,6 +165,23 @@ async function resolveUserInventoryAnswer(
     evidence: hasEtc ? [...evidence, "etc."] : evidence,
     notice,
     model: "firebase-admin"
+  };
+}
+
+function resolveGreetingAnswer(question: string) {
+  if (!isGreetingQuestion(question)) {
+    return null;
+  }
+
+  return {
+    sql: "",
+    answer:
+      "Hola. Puedes pedirme consultas de solo lectura sobre pedidos, clientes, cotizaciones, inventario, productos o usuarios.",
+    explanation: "Saludo respondido localmente sin consultar el proveedor de IA.",
+    assumptions: [],
+    evidence: [],
+    notice: null,
+    model: "local-greeting"
   };
 }
 
@@ -469,6 +487,7 @@ async function resolveDirectOperationalAnswer(
   question: string
 ) {
   return (
+    resolveGreetingAnswer(question) ??
     (await resolveWriteActionTemplate(request, question)) ??
     (await resolveUserInventoryAnswer(request, question)) ??
     (await resolveProductCatalogAnswer(request, question))

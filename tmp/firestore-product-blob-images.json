@@ -1,0 +1,299 @@
+[
+  {
+    "productId": "prod-electrolyte-e8",
+    "name": "Analizador de Electrolitos E8",
+    "sku": "ELE-E8-003",
+    "source": "asset electrolitos",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/electrolitos.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-electrolyte-e8/primary-1780102507677-analizador-de-electrolitos-e8-pEBzscOJAyJazkUCRgNvo9S3q69Yo3.png",
+    "pathname": "products/prod-electrolyte-e8/primary-1780102507677-analizador-de-electrolitos-e8-pEBzscOJAyJazkUCRgNvo9S3q69Yo3.png"
+  },
+  {
+    "productId": "prod-chemistry-c200",
+    "name": "Analizador de Quimica Clinica C200",
+    "sku": "QUI-C200-002",
+    "source": "asset reactivos/microbiologia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/microbiologia.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-chemistry-c200/primary-1780102509167-analizador-de-quimica-clinica-c200-X4llJ92MQassYUtSdTDbBgIKPkhTuu.png",
+    "pathname": "products/prod-chemistry-c200/primary-1780102509167-analizador-de-quimica-clinica-c200-X4llJ92MQassYUtSdTDbBgIKPkhTuu.png"
+  },
+  {
+    "productId": "prod-autohematology-x5",
+    "name": "Analizador Hematologico X5",
+    "sku": "HEM-X5-001",
+    "source": "asset hematologia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/hematologia.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-autohematology-x5/primary-1780102510462-analizador-hematologico-x5-Pkbghm3n4efkqA5MumgiRD0DsQLy2n.png",
+    "pathname": "products/prod-autohematology-x5/primary-1780102510462-analizador-hematologico-x5-Pkbghm3n4efkqA5MumgiRD0DsQLy2n.png"
+  },
+  {
+    "productId": "prod-robot-arm-r7",
+    "name": "Brazo Robotico R7",
+    "sku": "ROB-R7-017",
+    "source": "asset hardware ia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/ai_hardware_1777123776193.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-robot-arm-r7/primary-1780102511678-brazo-robotico-r7-0TbuM8raVol4rfcdh7wQwQDiO0I1q3.png",
+    "pathname": "products/prod-robot-arm-r7/primary-1780102511678-brazo-robotico-r7-0TbuM8raVol4rfcdh7wQwQDiO0I1q3.png"
+  },
+  {
+    "productId": "fake-robot-arm-r7",
+    "name": "Brazo Robótico R7 de Precisión",
+    "sku": "FAKE-RBT-001",
+    "source": "asset robotica",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/tech_robot_1777091060991.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/fake-robot-arm-r7/primary-1780102512450-brazo-robotico-r7-de-precision-UAjVU0moosMnXOBAxmtkjw7gic1Z6H.png",
+    "pathname": "products/fake-robot-arm-r7/primary-1780102512450-brazo-robotico-r7-de-precision-UAjVU0moosMnXOBAxmtkjw7gic1Z6H.png"
+  },
+  {
+    "productId": "prod-microbio-mx",
+    "name": "Cabina Microbiologica MX",
+    "sku": "MIC-MX-005",
+    "source": "asset microbiologia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/microbiologia.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-microbio-mx/primary-1780102513748-cabina-microbiologica-mx-Wn3epUbgO3BEFB0ZYcDTSkdesdwRha.png",
+    "pathname": "products/prod-microbio-mx/primary-1780102513748-cabina-microbiologica-mx-Wn3epUbgO3BEFB0ZYcDTSkdesdwRha.png"
+  },
+  {
+    "productId": "prod-centrifuge-c12",
+    "name": "Centrifuga Clinica C12",
+    "sku": "EQ-CEN-012",
+    "source": "asset centrifuga",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/support-centrifuge-main.jpg",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-centrifuge-c12/primary-1780102515157-centrifuga-clinica-c12-1tX8XVBwBo84lhcHdv2ZoFjwR9ts5f.jpg",
+    "pathname": "products/prod-centrifuge-c12/primary-1780102515157-centrifuga-clinica-c12-1tX8XVBwBo84lhcHdv2ZoFjwR9ts5f.jpg"
+  },
+  {
+    "productId": "PROD-CEN-002",
+    "name": "Centrífuga de Laboratorio 4000 RPM",
+    "sku": "",
+    "source": "asset equipo generico",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/hero-equipment.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/PROD-CEN-002/primary-1780102515683-centrifuga-de-laboratorio-4000-rpm-FYcpW519xWSxAb9IGnFX4Yn9JolKYC.png",
+    "pathname": "products/PROD-CEN-002/primary-1780102515683-centrifuga-de-laboratorio-4000-rpm-FYcpW519xWSxAb9IGnFX4Yn9JolKYC.png"
+  },
+  {
+    "productId": "0j6dbJVEkT72fL2Z3fv7",
+    "name": "Cepillo de grabado laser",
+    "sku": "",
+    "source": "asset reactivos/microbiologia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/microbiologia.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/0j6dbJVEkT72fL2Z3fv7/primary-1780102517014-cepillo-de-grabado-laser-J0PHwf4gMitjfoL3uPxLUtG3cFyfQe.png",
+    "pathname": "products/0j6dbJVEkT72fL2Z3fv7/primary-1780102517014-cepillo-de-grabado-laser-J0PHwf4gMitjfoL3uPxLUtG3cFyfQe.png"
+  },
+  {
+    "productId": "prod-hardware-ia",
+    "name": "Clúster de IA Nexus Server",
+    "sku": "HW-IA-001",
+    "source": "asset hardware ia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/ai_hardware_1777123776193.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-hardware-ia/primary-1780102518546-cluster-de-ia-nexus-server-rdcIOA335Vc70eQheTYslRNYm8ifn2.png",
+    "pathname": "products/prod-hardware-ia/primary-1780102518546-cluster-de-ia-nexus-server-rdcIOA335Vc70eQheTYslRNYm8ifn2.png"
+  },
+  {
+    "productId": "prod-ai-cluster-nexus",
+    "name": "Cluster IA Nexus Server",
+    "sku": "AI-NEX-015",
+    "source": "asset hardware ia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/ai_hardware_1777123776193.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-ai-cluster-nexus/primary-1780102519449-cluster-ia-nexus-server-n60vaKuFip032zRrnhd8yCHaZgg6OO.png",
+    "pathname": "products/prod-ai-cluster-nexus/primary-1780102519449-cluster-ia-nexus-server-n60vaKuFip032zRrnhd8yCHaZgg6OO.png"
+  },
+  {
+    "productId": "fake-ai-cluster-x12",
+    "name": "Cluster IA X12 Tensor Rack",
+    "sku": "FAKE-AI-002",
+    "source": "asset hardware ia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/ai_hardware_1777123776193.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/fake-ai-cluster-x12/primary-1780102520674-cluster-ia-x12-tensor-rack-66t2P2hyoq08LhXlw8wtU6MhOjDswH.png",
+    "pathname": "products/fake-ai-cluster-x12/primary-1780102520674-cluster-ia-x12-tensor-rack-66t2P2hyoq08LhXlw8wtU6MhOjDswH.png"
+  },
+  {
+    "productId": "prod-control-hematology",
+    "name": "Control Hematologico Trinivel",
+    "sku": "CTRL-HEM-009",
+    "source": "asset hematologia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/hematologia.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-control-hematology/primary-1780102521744-control-hematologico-trinivel-sUgJljTee6WytJThut0kZqrntIhdeg.png",
+    "pathname": "products/prod-control-hematology/primary-1780102521744-control-hematologico-trinivel-sUgJljTee6WytJThut0kZqrntIhdeg.png"
+  },
+  {
+    "productId": "fake-drone-inspect-z2",
+    "name": "Drone Inspect Z2",
+    "sku": "FAKE-DRN-005",
+    "source": "asset robotica",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/tech_robot_1777091060991.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/fake-drone-inspect-z2/primary-1780102522839-drone-inspect-z2-1g4G5c8uPDiWui5C4fIf8dMdrkzrtf.png",
+    "pathname": "products/fake-drone-inspect-z2/primary-1780102522839-drone-inspect-z2-1g4G5c8uPDiWui5C4fIf8dMdrkzrtf.png"
+  },
+  {
+    "productId": "prod-edge-box-k4",
+    "name": "Edge Box K4 Laboratorio",
+    "sku": "AI-EDG-016",
+    "source": "asset hardware ia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/ai_hardware_1777123776193.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-edge-box-k4/primary-1780102523581-edge-box-k4-laboratorio-97BzCsFRXb26yAZxlNNM9ymUdDL03e.png",
+    "pathname": "products/prod-edge-box-k4/primary-1780102523581-edge-box-k4-laboratorio-97BzCsFRXb26yAZxlNNM9ymUdDL03e.png"
+  },
+  {
+    "productId": "fake-edge-box-k4",
+    "name": "Edge Box K4 Rugged AI",
+    "sku": "FAKE-EDG-004",
+    "source": "asset hardware ia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/ai_hardware_1777123776193.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/fake-edge-box-k4/primary-1780102524776-edge-box-k4-rugged-ai-kSfl1NJvAd00gt9GSs6ERb6EKm4lzS.png",
+    "pathname": "products/fake-edge-box-k4/primary-1780102524776-edge-box-k4-rugged-ai-kSfl1NJvAd00gt9GSs6ERb6EKm4lzS.png"
+  },
+  {
+    "productId": "prod-florero-123123",
+    "name": "florero",
+    "sku": "123123",
+    "source": "asset hardware ia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/ai_hardware_1777123776193.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-florero-123123/primary-1780102525590-florero-6nm4iRHdt7S5dqIE83L0Pe5E1vLulb.png",
+    "pathname": "products/prod-florero-123123/primary-1780102525590-florero-6nm4iRHdt7S5dqIE83L0Pe5E1vLulb.png"
+  },
+  {
+    "productId": "prod-incubator-co2",
+    "name": "Incubadora CO2 para Cultivos",
+    "sku": "EQ-INC-013",
+    "source": "asset incubadora co2",
+    "localImage": "/home/gian/Escritorio/protonlab_backend/public/product-images/incubadora-co2-cultivos.jpg",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-incubator-co2/primary-1780102527066-incubadora-co2-para-cultivos-KNuvJlPEFR37YHgHvedbAZa0zhL8u5.jpg",
+    "pathname": "products/prod-incubator-co2/primary-1780102527066-incubadora-co2-para-cultivos-KNuvJlPEFR37YHgHvedbAZa0zhL8u5.jpg"
+  },
+  {
+    "productId": "prod-incubadora-co2",
+    "name": "Incubadora CO2 para Cultivos Celulares",
+    "sku": "EQ-INC-005",
+    "source": "asset incubadora co2",
+    "localImage": "/home/gian/Escritorio/protonlab_backend/public/product-images/incubadora-co2-cultivos.jpg",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-incubadora-co2/primary-1780102527661-incubadora-co2-para-cultivos-celulares-8GoJV5yLZ4OgIhL4Un4ovaEPfRITIC.jpg",
+    "pathname": "products/prod-incubadora-co2/primary-1780102527661-incubadora-co2-para-cultivos-celulares-8GoJV5yLZ4OgIhL4Un4ovaEPfRITIC.jpg"
+  },
+  {
+    "productId": "prod-nanobot-kit",
+    "name": "Kit Nanobots Educativo",
+    "sku": "NAN-KIT-018",
+    "source": "asset hardware ia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/ai_hardware_1777123776193.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-nanobot-kit/primary-1780102528244-kit-nanobots-educativo-qsuxqiqhynRvLoQTsX8kqBNbERyJpM.png",
+    "pathname": "products/prod-nanobot-kit/primary-1780102528244-kit-nanobots-educativo-qsuxqiqhynRvLoQTsX8kqBNbERyJpM.png"
+  },
+  {
+    "productId": "prod-tbc-rapid",
+    "name": "Kit TBC Rapid x25",
+    "sku": "TBC-RAP-006",
+    "source": "asset reactivos/microbiologia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/microbiologia.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-tbc-rapid/primary-1780102529372-kit-tbc-rapid-x25-fAL9z83BtfsBuwy5zGHUCqW1YJOpvs.png",
+    "pathname": "products/prod-tbc-rapid/primary-1780102529372-kit-tbc-rapid-x25-fAL9z83BtfsBuwy5zGHUCqW1YJOpvs.png"
+  },
+  {
+    "productId": "prod-urine-u500",
+    "name": "Lector de Orinas U500",
+    "sku": "URI-U500-004",
+    "source": "asset orinas",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/orinas.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-urine-u500/primary-1780102530293-lector-de-orinas-u500-wWZUJO9t9UV8BzYyWH400AoqGP5KxB.png",
+    "pathname": "products/prod-urine-u500/primary-1780102530293-lector-de-orinas-u500-wWZUJO9t9UV8BzYyWH400AoqGP5KxB.png"
+  },
+  {
+    "productId": "fake-lidar-s9",
+    "name": "LiDAR S9 Multicapa",
+    "sku": "FAKE-SNS-003",
+    "source": "asset sensores",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/nano_banana_hardware_1777090630644.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/fake-lidar-s9/primary-1780102531181-lidar-s9-multicapa-SbuMEAMMlSlTqHgk5TsEJ3DsmD1hFL.png",
+    "pathname": "products/fake-lidar-s9/primary-1780102531181-lidar-s9-multicapa-SbuMEAMMlSlTqHgk5TsEJ3DsmD1hFL.png"
+  },
+  {
+    "productId": "PROD-MIC-001",
+    "name": "Microscopio Binocular Clínico",
+    "sku": "",
+    "source": "asset microscopio",
+    "localImage": "/home/gian/Escritorio/protonlab_backend/public/product-images/microscopio-fluorescencia.jpg",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/PROD-MIC-001/primary-1780102531961-microscopio-binocular-clinico-o81pHDkLiIy3jOZoLNVNq4vDhEGXef.jpg",
+    "pathname": "products/PROD-MIC-001/primary-1780102531961-microscopio-binocular-clinico-o81pHDkLiIy3jOZoLNVNq4vDhEGXef.jpg"
+  },
+  {
+    "productId": "prod-microscope-hd",
+    "name": "Microscopio de Fluorescencia HD",
+    "sku": "EQ-MIC-014",
+    "source": "asset microscopio",
+    "localImage": "/home/gian/Escritorio/protonlab_backend/public/product-images/microscopio-fluorescencia.jpg",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-microscope-hd/primary-1780102532535-microscopio-de-fluorescencia-hd-wcXi3DYjkc2YvXNNbmKqjAjXzV5gxU.jpg",
+    "pathname": "products/prod-microscope-hd/primary-1780102532535-microscopio-de-fluorescencia-hd-wcXi3DYjkc2YvXNNbmKqjAjXzV5gxU.jpg"
+  },
+  {
+    "productId": "prod-microscopio",
+    "name": "Microscopio de Fluorescencia HD",
+    "sku": "EQ-MIC-004",
+    "source": "asset microscopio",
+    "localImage": "/home/gian/Escritorio/protonlab_backend/public/product-images/microscopio-fluorescencia.jpg",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-microscopio/primary-1780102533821-microscopio-de-fluorescencia-hd-Siir7l41VSFisY4PbNPOTMHPdlvdV7.jpg",
+    "pathname": "products/prod-microscopio/primary-1780102533821-microscopio-de-fluorescencia-hd-Siir7l41VSFisY4PbNPOTMHPdlvdV7.jpg"
+  },
+  {
+    "productId": "prod-procesador-cuantico",
+    "name": "Procesador Cuántico Q-Core",
+    "sku": "HW-QC-002",
+    "source": "asset procesador cuantico",
+    "localImage": "/home/gian/Escritorio/protonlab_backend/public/product-images/procesador-cuantico-qcore.jpg",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-procesador-cuantico/primary-1780102534883-procesador-cuantico-q-core-8h0R0Fs35G7VEoyAdmr2hWtci4N5Zd.jpg",
+    "pathname": "products/prod-procesador-cuantico/primary-1780102534883-procesador-cuantico-q-core-8h0R0Fs35G7VEoyAdmr2hWtci4N5Zd.jpg"
+  },
+  {
+    "productId": "prod-pipette-tips",
+    "name": "Puntas de Pipeta Esteriles x960",
+    "sku": "INS-PUN-011",
+    "source": "asset pipeta",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/support-pipette-test-tubes.jpg",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-pipette-tips/primary-1780102535515-puntas-de-pipeta-esteriles-x960-M9oTcl9vW2ZVQ1RjT7csQseR5lbn7t.jpg",
+    "pathname": "products/prod-pipette-tips/primary-1780102535515-puntas-de-pipeta-esteriles-x960-M9oTcl9vW2ZVQ1RjT7csQseR5lbn7t.jpg"
+  },
+  {
+    "productId": "prod-reactive-creatinine",
+    "name": "Reactivo Creatinina 400 Tests",
+    "sku": "REA-CRE-008",
+    "source": "asset reactivos/microbiologia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/microbiologia.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-reactive-creatinine/primary-1780102536341-reactivo-creatinina-400-tests-iScJpDfOuccTkANSRPOzMlbSkpGGQp.png",
+    "pathname": "products/prod-reactive-creatinine/primary-1780102536341-reactivo-creatinina-400-tests-iScJpDfOuccTkANSRPOzMlbSkpGGQp.png"
+  },
+  {
+    "productId": "prod-reactive-glucose",
+    "name": "Reactivo Glucosa 500 Tests",
+    "sku": "REA-GLU-007",
+    "source": "asset reactivos/microbiologia",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/amilab/microbiologia.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-reactive-glucose/primary-1780102537152-reactivo-glucosa-500-tests-HwNp4L1o2an6ck3a674S8PSR5MgowU.png",
+    "pathname": "products/prod-reactive-glucose/primary-1780102537152-reactivo-glucosa-500-tests-HwNp4L1o2an6ck3a674S8PSR5MgowU.png"
+  },
+  {
+    "productId": "fake-sensor-array-q8",
+    "name": "Sensor Array Q8",
+    "sku": "FAKE-SNS-006",
+    "source": "asset sensores",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/nano_banana_hardware_1777090630644.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/fake-sensor-array-q8/primary-1780102538083-sensor-array-q8-kVGybOXJi4TL6zOUyjJUWKHEY6RvvA.png",
+    "pathname": "products/fake-sensor-array-q8/primary-1780102538083-sensor-array-q8-kVGybOXJi4TL6zOUyjJUWKHEY6RvvA.png"
+  },
+  {
+    "productId": "prod-ssd-vanguardia",
+    "name": "SSD NVMe Neo-Force PCIe 5.0",
+    "sku": "HW-SSD-003",
+    "source": "asset hardware",
+    "localImage": "/home/gian/Escritorio/front-protonlab/src/assets/images/protonlab/tech_hardware_1777091078472.png",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-ssd-vanguardia/primary-1780102539363-ssd-nvme-neo-force-pcie-5-0-xMwpajy09IFDOIZf0qIDT1DX4Na3uJ.png",
+    "pathname": "products/prod-ssd-vanguardia/primary-1780102539363-ssd-nvme-neo-force-pcie-5-0-xMwpajy09IFDOIZf0qIDT1DX4Na3uJ.png"
+  },
+  {
+    "productId": "prod-tubes-vacuum",
+    "name": "Tubos al Vacio EDTA x1000",
+    "sku": "INS-TUB-010",
+    "source": "asset tubos ensayo",
+    "localImage": "/home/gian/Escritorio/protonlab_backend/public/product-images/caja-tubos-ensayo-vidrio.jpg",
+    "blobUrl": "https://dzkjreaxn5ennfih.public.blob.vercel-storage.com/products/prod-tubes-vacuum/primary-1780102540228-tubos-al-vacio-edta-x1000-DfUoPtCN7EwNAQDflstqrhw3bGoqMn.jpg",
+    "pathname": "products/prod-tubes-vacuum/primary-1780102540228-tubos-al-vacio-edta-x1000-DfUoPtCN7EwNAQDflstqrhw3bGoqMn.jpg"
+  }
+]

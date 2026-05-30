@@ -4,6 +4,7 @@ import {
   buildActionTemplate,
   classifyAssistantIntent,
   isConfirmedProductCreate,
+  isGreetingQuestion,
   isProductQuestion,
   isUserQuestion
 } from "../../src/server/sql-assistant-intent";
@@ -41,6 +42,24 @@ describe("sql assistant route handler", () => {
         sku: "ABC-1"
       }
     });
+  });
+
+  it("does not classify read-only user count SQL requests as delete actions", () => {
+    const question = "hola dame una consulta sql de cuantos usuarios existen";
+
+    expect(classifyAssistantIntent(question)).toMatchObject({
+      action: "count",
+      entity: "user",
+      requiresTemplate: false
+    });
+    expect(buildActionTemplate(question)).toBeNull();
+    expect(isUserQuestion(question)).toBe(true);
+  });
+
+  it("detects simple greetings as local assistant messages", () => {
+    expect(isGreetingQuestion("hola")).toBe(true);
+    expect(isGreetingQuestion("buenas tardes")).toBe(true);
+    expect(isGreetingQuestion("hola dame pedidos pendientes")).toBe(false);
   });
 
   it("parses product template continuations and confirmation commands", () => {
@@ -162,6 +181,46 @@ describe("sql assistant route handler", () => {
         answer: "En el sistema existen 2 usuarios.",
         evidence: ["Admin <admin@protonlab.cl>", "Vendedor <seller@protonlab.cl>"],
         model: "firebase-admin"
+      }
+    });
+  });
+
+  it("answers simple greetings without calling the AI provider", async () => {
+    const generateQuery = vi.fn();
+    const handler = createSqlAssistantHandler({
+      generateQuery,
+      resolveHumanAnswer: vi.fn().mockResolvedValue({
+        sql: "",
+        answer:
+          "Hola. Puedes pedirme consultas de solo lectura sobre pedidos, clientes, cotizaciones, inventario, productos o usuarios.",
+        explanation: "Saludo respondido sin consultar el proveedor de IA.",
+        assumptions: [],
+        evidence: [],
+        notice: null,
+        model: "local-greeting"
+      })
+    });
+
+    const response = await handler(
+      new Request("http://localhost/api/ai/sql-assistant", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          question: "hola"
+        })
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(generateQuery).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toMatchObject({
+      success: true,
+      data: {
+        answer:
+          "Hola. Puedes pedirme consultas de solo lectura sobre pedidos, clientes, cotizaciones, inventario, productos o usuarios.",
+        model: "local-greeting"
       }
     });
   });
